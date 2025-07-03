@@ -22,6 +22,7 @@ webserv/
 │   └── utils/             # Utilities
 │       ├── Logger.hpp
 │       ├── FileUtils.hpp
+│       ├── SharedPtr.hpp  # To make our life easier
 │       └── URI.hpp
 ├── src/                   # Source files
 │   ├── server/
