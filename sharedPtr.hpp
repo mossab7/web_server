@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __SHAREDPTR__
-#define __SHAREDPTR__
+#ifndef SHAREDPTR_HPP
+#define SHAREDPTR_HPP
 
 #include <iostream>
 
