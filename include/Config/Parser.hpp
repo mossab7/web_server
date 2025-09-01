@@ -23,7 +23,7 @@ class Parser
     {
         std::string     _error;
     public:
-        ParserError(const std::string& msg, unsigned int line, unsigned int colm);
+        ParserError(const std::string& msg, uint32_t line, uint32_t colm);
         ~ParserError() throw();
         const char* what() const throw();
     };

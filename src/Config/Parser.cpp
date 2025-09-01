@@ -1,7 +1,7 @@
 #include "Parser.hpp"
 #include <iostream>
 
-Parser::ParserError::ParserError(const std::string& msg, unsigned int line, unsigned int colm)
+Parser::ParserError::ParserError(const std::string& msg, uint32_t line, uint32_t colm)
 {
     std::ostringstream error;
     error << line << ":" << colm << ": " << msg;

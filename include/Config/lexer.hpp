@@ -6,6 +6,7 @@
 #include <exception>
 #include <string>
 #include <sstream>
+#include <stdint.h>
 
 #define SYMBOLS "~;{}"
 
@@ -73,9 +74,9 @@ class lexer
 private:
     std::ifstream   _inFile;    ///< Input file stream for reading configuration data
 
-    unsigned int    _currLine;  ///< Current line number in file (1-based, for error reporting)
-    unsigned int    _currColm;  ///< Column position where current token started (1-based)
-    unsigned int    _scanColm;  ///< Current scanning column position (1-based, tracks reading head)
+    uint32_t    _currLine;  ///< Current line number in file (1-based, for error reporting)
+    uint32_t    _currColm;  ///< Column position where current token started (1-based)
+    uint32_t    _scanColm;  ///< Current scanning column position (1-based, tracks reading head)
 
 public:
     /**
@@ -135,7 +136,7 @@ public:
      * Useful for generating meaningful error messages that help users
      * locate syntax errors in their configuration files.
      */
-    unsigned int getCurrLine(void) const;
+    uint32_t getCurrLine(void) const;
 
     /**
      * @brief Gets the column position where the current token started.
@@ -145,7 +146,7 @@ public:
      * started, not the current scanning position. Useful for pinpointing
      * the exact location of problematic tokens in error messages.
      */
-    unsigned int getCurrColm(void) const;
+    uint32_t getCurrColm(void) const;
 };
 
 #endif

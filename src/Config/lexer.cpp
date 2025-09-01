@@ -19,8 +19,8 @@ lexer::~lexer()
 }
 
 
-unsigned int    lexer::getCurrLine(void) const { return _currLine; }
-unsigned int    lexer::getCurrColm(void) const { return _currColm; }
+uint32_t    lexer::getCurrLine(void) const { return _currLine; }
+uint32_t    lexer::getCurrColm(void) const { return _currColm; }
 
 token_t lexer::getNextToken(void)
 {
