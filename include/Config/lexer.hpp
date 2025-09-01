@@ -7,7 +7,7 @@
 #include <string>
 #include <sstream>
 
-#define SYMBOLS "~,;{}"
+#define SYMBOLS "~;{}"
 
 /**
  * @brief Token types for webserv configuration file parsing.
@@ -18,9 +18,8 @@
  */
 enum token_types_t
 {
-    TKN_WORD         = 0,   ///< Unquoted words, identifiers, numbers (e.g., "server", "listen", "80")
+    TKN_WORD    = 0,        ///< Unquoted words, identifiers, numbers (e.g., "server", "listen", "80")
     TKN_SEMCLN  = ';',      ///< Semicolon statement terminator ';'
-    TKN_COMMA   = ',',      ///< Comma separator ','
     TKN_LCBRAC  = '{',      ///< Left curly brace '{' for block start
     TKN_RCBRAC  = '}',      ///< Right curly brace '}' for block end
     TKN_TILDA   = '~',      ///< Tilde '~' for regex patterns or special matching
