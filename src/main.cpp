@@ -56,7 +56,7 @@ int main(int ac, char **av)
     try {
 
         Parser config(av[1]);
-        print_directive(config.buildTree(), 0);
+        print_directive(config.parse(), 0);
     } catch (const std::exception& e) {
         console.error(e.what());
     }

@@ -18,43 +18,54 @@ const char* Parser::ParserError::what() const throw()
 
 
 Parser::Parser(const std::string& filepath):
-    _file(filepath.c_str())
+    _file(filepath.c_str()),
+    _nestDepth(0)
 {
 
 }
 
-// parse a single block
-// note: 'getNextToken' is a lazy lexer method, 
-// each call returns a new token from file
 directive_t Parser::_parseDirective()
 {
     directive_t dir;
-    token_t     token = _file.getNextToken();
+    token_t     tkn = _file.getNextToken();
 
-    // '}' means end of a block
-    if (token.type == TKN_RCBRAC) return dir;
-    if (token.type == TKN_EOF) return dir;
-
-    // dires start with there name
-    if (token.type != TKN_WORD)
-        throw ParserError("unexpected token '" + token.value + "'", _file.getCurrLine(), _file.getCurrColm());
-        
-    // assign name to dir    
-    if (dir.name.empty())
-        dir.name = token.value;
-
-    // get arguments
-    while ((token = _file.getNextToken()).type != TKN_EOF)
+    if (tkn.type == TKN_EOF) return dir;
+    if (tkn.type == TKN_RCBRAC)
     {
-        if (token.type == TKN_WORD || token.type == TKN_QUOTED || token.type == TKN_TILDA)
-            dir.args.push_back(token.value);
-        if (token.type == TKN_SEMCLN) break;
-        if (token.type == TKN_LCBRAC) break;
+        if (_nestDepth > 0)
+            return --_nestDepth, dir;
+        else
+            throw ParserError("unexpected '}' - no maching '{'",
+            _file.getCurrLine(), _file.getCurrColm());
     }
 
-    if (token.type == TKN_LCBRAC)
+    if (tkn.type != TKN_WORD)
+        throw ParserError("unexpected token " + tkn.value + "'", 
+            _file.getCurrLine(),
+            _file.getCurrColm());
+
+    dir.name = tkn.value;
+
+    while ((tkn = _file.getNextToken()).type != TKN_EOF)
+    {
+        if (tkn.type == TKN_SEMCLN) break;
+        if (tkn.type == TKN_LCBRAC) break;
+        if (tkn.type != TKN_WORD && tkn.type != TKN_QUOTED && tkn.type != TKN_TILDA)
+            throw ParserError("unexpected token " + tkn.value + "'", 
+            _file.getCurrLine(),
+            _file.getCurrColm());
+        dir.args.push_back(tkn.value);
+    }
+
+    if (tkn.type == TKN_EOF)
+    {
+        throw ParserError("unexpteced EOF in directive '" + dir.name + "' - (missing ';' or '{')", _file.getCurrLine(), _file.getCurrColm());
+    }
+
+    if (tkn.type == TKN_LCBRAC)
     {
         dir.is_block = true;
+        ++_nestDepth;
         while (true)
         {
             directive_t child = _parseDirective();
@@ -62,11 +73,11 @@ directive_t Parser::_parseDirective()
             dir.children.push_back(child);
         }
     }
-
+    
     return dir;
 }
 
-directive_t Parser::buildTree(void)
+directive_t Parser::parse(void)
 {
     directive_t mainContext;
     directive_t tmp;
@@ -76,5 +87,8 @@ directive_t Parser::buildTree(void)
     // keep parsing directives until no more
     while((tmp = _parseDirective()).name != "")
         mainContext.children.push_back(tmp);
+    if (_nestDepth != 0)
+        throw ParserError("unexpected '{' - no maching '}'",
+            _file.getCurrLine(), _file.getCurrColm());
     return mainContext;
 }

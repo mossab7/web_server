@@ -15,7 +15,8 @@ struct directive_t
 class Parser
 {
     // lazy lexer
-    lexer       _file;
+    lexer       _file;  // inputfile
+    int         _nestDepth; // to track how deep are we 
     directive_t _parseDirective();
 
     class ParserError: public std::exception
@@ -29,7 +30,7 @@ class Parser
 
 public:
     Parser(const std::string& filename);
-    directive_t buildTree(void);
+    directive_t parse(void);
 };
 
 #endif
