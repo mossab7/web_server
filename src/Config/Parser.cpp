@@ -1,5 +1,4 @@
 #include "Parser.hpp"
-#include <iostream>
 
 Parser::ParserError::ParserError(const std::string& msg, uint32_t line, uint32_t colm)
 {
