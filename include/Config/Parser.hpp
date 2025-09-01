@@ -1,16 +1,8 @@
 #ifndef WEBSERV_PARSER_HPP
 #define WEBSERV_PARSER_HPP
 
-#include <vector>
 #include "lexer.hpp"
-
-struct directive_t
-{
-    std::string              name;
-    std::vector<std::string> args;
-    bool                     is_block;
-    std::vector<directive_t> children;
-};
+#include "directive.hpp"
 
 /**
  * @class Parser
