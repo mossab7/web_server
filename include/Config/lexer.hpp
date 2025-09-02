@@ -32,6 +32,8 @@ struct token_t
 {
     token_types_t   type;   ///< Token classification
     std::string     value;  ///< Token content (quotes removed if quoted)
+    uint32_t        line;
+    uint32_t        colm;
 };
 
 /**
@@ -47,6 +49,52 @@ private:
     uint32_t    _currColm;  ///< Column where current token started (1-based)
     uint32_t    _scanColm;  ///< Current scanning column (1-based)
 
+    /**
+     * @brief Creates a token with current position information.
+     * @param type Token type
+     * @param value Token value
+     * @return Token with position set
+     */
+    token_t     _createToken(token_types_t type, const std::string& value);
+    
+    /**
+     * @brief Skips whitespace and comments.
+     */
+    void        _skipUnwanted();
+
+    /**
+     * @brief Advances the scanner and updates position tracking.
+     * @return Next character from input, or EOF
+     */
+    char        _getChar();
+
+    /**
+     * @brief Puts back a character and adjusts position tracking.
+     * @param c Character to put back
+     */
+    void        _ungetChar();
+
+    /**
+     * @brief Creates a symbol token.
+     * @param symbol The symbol character
+     * @return Symbol token
+     */
+    token_t     _readSymbol(char smb);
+
+    /**
+     * @brief Reads a quoted string token.
+     * @param quote The quote character (' or ")
+     * @return Quoted string token
+     * @throws std::logic_error on unterminated string
+     */
+    token_t     _readQuoted(char quote);
+
+    /**
+     * @brief Reads a word token.
+     * @param f First character of the word
+     * @return Word token
+     */
+    token_t     _readWord(char f);
 public:
     /**
      * @brief Constructs a lexer for a configuration file.

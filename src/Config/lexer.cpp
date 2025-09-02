@@ -1,15 +1,15 @@
 #include "lexer.hpp"
 
-lexer::lexer(const std::string& filepath):
+lexer::lexer(const std::string &filepath):
     _inFile(filepath.c_str()),
     _currLine(1),
     _currColm(1),
-    _scanColm(0)
+    _scanColm(1)
 {
     if (!_inFile.is_open())
     {
         std::string errorMsg = "Failed to open log file '" + filepath + "': " + std::strerror(errno);
-        throw std::runtime_error(errorMsg);  
+        throw std::runtime_error(errorMsg);
     }
 }
 lexer::~lexer()
@@ -18,87 +18,126 @@ lexer::~lexer()
         _inFile.close();
 }
 
+uint32_t lexer::getCurrLine(void) const { return _currLine; }
+uint32_t lexer::getCurrColm(void) const { return _currColm; }
 
-uint32_t    lexer::getCurrLine(void) const { return _currLine; }
-uint32_t    lexer::getCurrColm(void) const { return _currColm; }
+token_t lexer::_createToken(token_types_t t, const std::string &v = "")
+{
+    token_t tkn;
+
+    tkn.colm = _currColm;
+    tkn.line = _currLine;
+    tkn.type = t;
+    tkn.value = v;
+
+    return tkn;
+}
+
+char lexer::_getChar()
+{
+    char c = _inFile.get();
+
+    if (c != EOF)
+    {
+        ++_scanColm;
+        if (c == '\n')
+        {
+            ++_currLine;
+            _scanColm = 1;
+        }
+    }
+    return c;
+}
+void lexer::_ungetChar()
+{
+    --_scanColm;
+    _inFile.unget();
+}
+
+void lexer::_skipUnwanted()
+{
+    char c;
+
+    while ((c = _getChar()) != EOF)
+    {
+        // skip comments
+        if (c == '#')
+            while ((c = _getChar()) != EOF && c != '\n')
+                ;
+
+        // break on delimeters
+        if (!std::isspace(c))
+        {
+            _ungetChar();
+            break;
+        }
+    }
+}
+
+token_t lexer::_readSymbol(char smb)
+{
+    char s[] = {smb};
+    return _createToken((token_types_t)smb, s);
+}
+token_t lexer::_readQuoted(char quote)
+{
+    std::string value;
+    char c;
+
+    // for error reporting
+    uint32_t tmpline = _currLine;
+    uint32_t tmpcolm = _currColm;
+
+    while ((c = _getChar()) != EOF && c != quote && c != '\n')
+        ++tmpcolm, value += c;
+
+    if (c == EOF || c == '\n')
+    {
+        std::ostringstream error;
+        error << tmpline << ":" << tmpcolm << ": "
+              << "missing closing quote" << std::endl;
+        throw std::runtime_error(error.str());
+    }
+
+    return _createToken(TKN_QUOTED, value);
+}
+token_t lexer::_readWord(char first)
+{
+    char c;
+    std::string value;
+
+    value += first;
+    while ((c = _getChar()) != EOF)
+    {
+        // break on delimiters
+        if (std::isspace(c) || std::strchr(SYMBOLS "'\"", c))
+        {
+            _ungetChar();
+            break;
+        }
+        value += c;
+    }
+
+    return _createToken(TKN_WORD, value);
+}
 
 token_t lexer::getNextToken(void)
 {
-    token_t tkn = {TKN_EOF, ""};
-    char c;
-    bool inWord = false;
+    _skipUnwanted();
 
-    while ((c = _inFile.get()) != EOF)
-    {
-        ++_scanColm;
+    char ch = _getChar();
 
-        // skip comments
-        if (c == '#')
-            while ((c = _inFile.get()) != EOF && c != '\n');
+    if (ch == EOF)
+        return _createToken(TKN_EOF);
 
-        // handle quoted strings
-        if (c == '\'' || c == '"')
-        {
-            char quote = c;
-            tkn.type = TKN_QUOTED;
-            _currColm = _scanColm;
-            while ((c = _inFile.get()) != EOF && c != '\n' && c != quote)
-                tkn.value += c, ++_scanColm;
-            if (c == EOF || c == '\n')
-            {
-                std::ostringstream error;
-                error << _currLine << ":" << _scanColm << ":missing closing quote\n";
-                throw std::logic_error(error.str());
-            }
-            if (c == quote) ++_scanColm;
-            break;
-        }
+    _currColm = _scanColm - 1;
 
-        // Handle newlines
-        if (c == '\n')
-        {
-            if (inWord)
-            {
-                _inFile.unget();
-                --_scanColm;
-                return tkn;
-            }
-            ++_currLine;
-            _scanColm = 0;
-            continue;
-        }
+    if (std::strchr(SYMBOLS, ch))
+        return _readSymbol(ch);
 
-        // Handle symbols
-        if (std::strchr(SYMBOLS, c))
-        {
-            if (inWord)
-            {
-                _inFile.unget();
-                --_scanColm;
-                return tkn;
-            }
-            _currColm = _scanColm;
-            tkn.type = (token_types_t)c;
-            tkn.value = c;
-            return tkn;
-        }
+    if (ch == '\'' || ch == '"')
+        return _readQuoted(ch);
 
-        // Handle whitespace
-        if (std::isspace(c))
-        {
-            if (inWord) return tkn;
-            continue;
-        }
-
-        // Handle word characters
-        if (!inWord)
-        {
-            _currColm = _scanColm;
-            tkn.type = TKN_WORD;
-            inWord = true;
-        }
-        tkn.value += c;
-    }
-
-    return tkn;
+    return _readWord(ch);
+    ;
 }
