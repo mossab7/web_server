@@ -1,23 +1,5 @@
 #include "Parser.hpp"
 
-//=========================================
-Parser::ParseError::ParseError(const std::string &msg, uint32_t line, uint32_t colm)
-{
-    std::ostringstream err;
-    err << line << ":" << colm << ": " << msg;
-    _err = err.str();
-}
-
-const char *Parser::ParseError::what() const throw()
-{
-    return _err.c_str();
-}
-
-Parser::ParseError::~ParseError() throw()
-{
-}
-// =======================================
-
 directive Parser::_parseDirective(const std::string &key, lexer &file)
 {
     directive dir;
@@ -72,7 +54,7 @@ Config Parser::parse(const std::string &filename)
         if (tkn.value == "server")
             cnf.push_back(_parseServer(file));
         else
-            throw ParseError("Global directives are not supported", tkn.line, tkn.colm);
+            throw std::runtime_error("Global directives are not supported");
     }
 
     return cnf;

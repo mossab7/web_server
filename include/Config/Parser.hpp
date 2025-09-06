@@ -28,16 +28,7 @@ typedef std::pair<directives, std::vector<locationConf> > serverConf;
 typedef std::vector<serverConf> Config;
 
 class Parser
-{
-    class ParseError: public std::exception
-    {
-        std::string _err;
-    public:
-        ParseError(const std::string& msg, uint32_t line, uint32_t colm);
-        ~ParseError() throw();
-        const char* what() const throw();
-    };
-    
+{   
     static directive    _parseDirective(const std::string& key, lexer& file);
     static locationConf _parseLocation(lexer& file);
     static serverConf   _parseServer(lexer& file);

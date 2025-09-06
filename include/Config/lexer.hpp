@@ -8,7 +8,7 @@
 #include <sstream>
 #include <stdint.h>
 
-#define SYMBOLS "~;{}"
+#define SYMBOLS ";{}"
 
 /**
  * @brief Token types for webserv configuration parsing.
@@ -20,7 +20,6 @@ enum token_types_t
     TKN_SEMCLN  = ';',
     TKN_LCBRAC  = '{',
     TKN_RCBRAC  = '}',
-    TKN_TILDA   = '~',      ///< Tilde '~' (e.g., for regex)
     TKN_QUOTED,             ///< Quoted strings
     TKN_EOF
 };
@@ -32,8 +31,6 @@ struct token_t
 {
     token_types_t   type;   ///< Token classification
     std::string     value;  ///< Token content (quotes removed if quoted)
-    uint32_t        line;
-    uint32_t        colm;
 };
 
 /**
@@ -44,10 +41,6 @@ class lexer
 {
 private:
     std::ifstream   _inFile;    ///< Input file stream
-
-    uint32_t    _currLine;  ///< Current line number (1-based)
-    uint32_t    _currColm;  ///< Column where current token started (1-based)
-    uint32_t    _scanColm;  ///< Current scanning column (1-based)
 
     /**
      * @brief Creates a token with current position information.
@@ -61,18 +54,6 @@ private:
      * @brief Skips whitespace and comments.
      */
     void        _skipUnwanted();
-
-    /**
-     * @brief Advances the scanner and updates position tracking.
-     * @return Next character from input, or EOF
-     */
-    char        _getChar();
-
-    /**
-     * @brief Puts back a character and adjusts position tracking.
-     * @param c Character to put back
-     */
-    void        _ungetChar();
 
     /**
      * @brief Creates a symbol token.
@@ -113,18 +94,6 @@ public:
      * @return Next token (type and value)
      */
     token_t getNextToken(void);
-
-    /**
-     * @brief Gets current line number for error reporting.
-     * @return Current line (1-based)
-     */
-    uint32_t getCurrLine(void) const;
-
-    /**
-     * @brief Gets the column where the current token started.
-     * @return Column number (1-based)
-     */
-    uint32_t getCurrColm(void) const;
 };
 
 
