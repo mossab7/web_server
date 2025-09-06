@@ -8,7 +8,7 @@ lexer::lexer(const std::string &filepath):
 {
     if (!_inFile.is_open())
     {
-        std::string errorMsg = "Failed to open log file '" + filepath + "': " + std::strerror(errno);
+        std::string errorMsg = "Failed to open file '" + filepath + "': " + std::strerror(errno);
         throw std::runtime_error(errorMsg);
     }
 }
@@ -62,8 +62,7 @@ void lexer::_skipUnwanted()
     {
         // skip comments
         if (c == '#')
-            while ((c = _getChar()) != EOF && c != '\n')
-                ;
+            while ((c = _getChar()) != EOF && c != '\n');
 
         // break on delimeters
         if (!std::isspace(c))
@@ -139,5 +138,4 @@ token_t lexer::getNextToken(void)
         return _readQuoted(ch);
 
     return _readWord(ch);
-    ;
 }
