@@ -5,7 +5,8 @@ INC_DIR = include
 OBJ_DIR = .objects
 
 # base flags
-CXXFLAGS =  -Wall -Wextra -Werror -std=c++98
+# the MMD flag is used to track changes in header files
+CXXFLAGS =  -Wall -Wextra -Werror -std=c++98 -MMD
 CXXFLAGS += -I$(INC_DIR)/utils -I$(INC_DIR)/Config -g3
 
 # project files.
@@ -17,6 +18,9 @@ UTILS = $(wildcard src/utils/*.cpp)
 
 SRC = $(MAIN) $(UTILS) $(PARSING)
 OBJ = $(SRC:%.cpp=$(OBJ_DIR)/%.o)
+
+# track header files too
+-include $(OBJ:.o=.d)
 
 all: $(NAME)
 
@@ -36,3 +40,4 @@ fclean: clean
 re: fclean all
 
 .PHONY: all clean fclean re
+.SECONDARY: $(OBJ)
