@@ -200,6 +200,14 @@ short printError(string &str, const string &fname, size_t &lnNbr) {
     return (1);
 }
 
+size_t myAtol(string str, string &line, const string &fname, size_t &lnNbr) {
+    for (size_t i = 0; i < str.size(); i++) {
+        if (!isdigit(str[i]))
+            return (printError(line, fname, lnNbr));
+    }
+    return (atol(str.c_str()));
+}
+
 Server::Server() {
     ip = "127.0.0.1";
     port = 80;
