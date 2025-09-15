@@ -7,6 +7,16 @@
 #include <vector>
 #include "Socket.hpp"
 
+#define EVENT_HAS_READ(event) ((event) & EPOLLIN)
+#define EVENT_HAS_WRITE(event) ((event) & EPOLLOUT)
+#define EVENT_HAS_ERROR(event) ((event) & (EPOLLERR | EPOLLHUP))
+#define EVENT_HAS_EDGE_TRIGGERED(event) ((event) & EPOLLET)
+#define EVENT_HAS_ONE_SHOT(event) ((event) & EPOLLONESHOT)
+#define EVENT_HAS_PRIORITY(event) ((event) & EPOLLPRI)
+#define EVENT_READ_WRITE (EPOLLIN | EPOLLOUT)
+#define EVENT_READ_WRITE_ERROR (EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLHUP)
+
+
 #define MAX_EVENTS 1024
 
 class Epoll
@@ -23,6 +33,7 @@ public:
     void modify_fd(int fd, uint32_t events);
     void remove_fd(int fd);
     void remove_fd(Socket &socket);
+    void Epoll::modify_fd(Socket &socket, uint32_t events);
     std::vector<Socket> wait(int timeout = -1);
 };
 
@@ -77,6 +88,11 @@ void Epoll::modify_fd(int fd, uint32_t events)
     {
         throw std::runtime_error("Failed to modify file descriptor in epoll");
     }
+}
+
+void Epoll::modify_fd(Socket &socket, uint32_t events)
+{
+    modify_fd(socket.get_fd(), events);
 }
 
 std::vector<Socket> Epoll::wait(int timeout = -1)

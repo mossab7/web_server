@@ -20,11 +20,11 @@ private:
     int _fd;
     uint32_t _event;
     Epoll *_epoll;
-    Socket(const Socket &other);
     Socket &operator=(const Socket &other);
     void create_socket(int domain, int type, int protocol);
-public:
+    public:
     Socket();
+    Socket(const Socket &other);
     Socket(fromFdTag, int fd);
     Socket(int fd, uint32_t event) : _fd(fd), _event(event), _epoll(nullptr) {};
     Socket(int _socket_domain, int _socket_type = SOCK_STREAM, int _protocol = 0);
@@ -44,6 +44,8 @@ public:
     void register_epoll(Epoll *epoll);
     void close();
 };
+
+Socket::Socket(const Socket &other) : _fd(other._fd), _event(other._event), _epoll(other._epoll) {}
 
 void Socket::register_epoll(Epoll *epoll)
 {
