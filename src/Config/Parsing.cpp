@@ -26,17 +26,70 @@ short parseConfigFile(WebConfigFile &config, const string &fname) {
 }
 
 string removeComment(const string &str) {
-
-    (void)str;
+    size_t  pos = str.find('#');
+    if (pos != string::npos)
+        return (reduceSpaces(trim(str.substr(0, pos))));
+    return (reduceSpaces(trim(str)));
 }
 
 short handleDirective(string &str, const string &fname, size_t &lnNbr, WebConfigFile &config) {
+    static bool srvActive = false;
+    static bool inLocation = false;
+    static Server srvTmp;
+    static Location locTmp;
 
-    (void)str;
-    (void)fname;
-    (void)lnNbr;
-    (void)config;
+    vector<string> tokens = split(str);
+    if (tokens.empty())
+        return (0);
+
+    if ((tokens.size() == 1 && tokens[0] == "server{") || 
+        (tokens.size() == 2 && tokens[0] == "server" && tokens[1] == "{")) {
+        if (srvActive)
+            return printError(str, fname, lnNbr);
+        srvActive = true;
+        srvTmp = Server();
+        return (0);
+    }
+
+    if ((tokens.size() == 1 && tokens[0] == "location{") || 
+        (tokens.size() == 2 && tokens[0] == "location" && tokens[1] == "{")) {
+        if (!srvActive || inLocation)
+            return printError(str, fname, lnNbr);
+        inLocation = true;
+        locTmp = Location();
+        locTmp.ApplyDefaults(srvTmp);
+        return (0);
+    }
+
+    if (tokens[0] == "}") {
+        if (inLocation) {
+            if (locTmp.route == "")
+                return printError(str, fname, lnNbr);
+            srvTmp.locations.push_back(locTmp);
+            inLocation = false;
+        }
+        else if (srvActive) {
+            config.servers.push_back(srvTmp);
+            srvActive = false;
+        }
+        else
+            return printError(str, fname, lnNbr);
+        return (0);
+    }
+
+    if (inLocation)
+        return handleLocation(str, tokens, locTmp, fname, lnNbr);
+    else if (srvActive)
+        return handleServer(str, tokens, srvTmp, fname, lnNbr);
+    else
+        return printError(str, fname, lnNbr);
+
     return (0);
+}
+
+short printError(string &str, const string &fname, size_t &lnNbr) {
+    cerr << "Webserv: syntax error in " << fname << " at line " << lnNbr << " → " << str << endl;
+    return (1);
 }
 
 Server::Server() {
