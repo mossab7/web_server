@@ -148,6 +148,53 @@ short handleDirective(string &str, const string &fname, size_t &lnNbr, WebConfig
     return (0);
 }
 
+short handleServer(string str, vector<string> &tokens, Server &srvTmp, const string &fname, size_t &lnNbr) {
+    if (tokens.size() < 2)
+        return (printError(str, fname, lnNbr));
+
+    if (tokens.size() == 2 && tokens[0] == "host") {
+        struct in_addr  addr;
+        if (!inet_aton(tokens[1].c_str(), &addr))
+            return (printError(str, fname, lnNbr));
+        srvTmp.ip = tokens[1];
+    }
+
+    else if (tokens.size() == 2 && tokens[0] == "port")
+    {
+        srvTmp.port = myAtol(tokens[1], str, fname, lnNbr);
+        if (srvTmp.port > 65535)
+            return (printError(str, fname, lnNbr));
+    }
+
+    else if (tokens.size() == 2 && tokens[0] == "server_name")
+        srvTmp.name = tokens[1];
+
+    else if (tokens.size() == 2 && tokens[0] == "root")
+        srvTmp.root = tokens[1];
+
+    else if (tokens.size() == 2 && tokens[0] == "client_max_body_size")
+        srvTmp.maxBody = myAtol(tokens[1], str, fname, lnNbr);
+
+    else if (tokens[0] == "index") {
+        srvTmp.files.clear();
+        for (size_t i = 1; i < tokens.size(); i++) {
+            for (size_t j = 0; j < srvTmp.files.size(); j++) {
+                if (tokens[i] == srvTmp.files[j])
+                    return printError(str, fname, lnNbr);
+            }
+            srvTmp.files.push_back(tokens[i]);
+        }
+    }
+
+    else if (tokens.size() == 3 && tokens[0] == "error_page")
+        srvTmp.errors[myAtol(tokens[1], str, fname, lnNbr)] = tokens[2];
+
+    else
+        return (printError(str, fname, lnNbr));
+
+    return (0);
+}
+
 short printError(string &str, const string &fname, size_t &lnNbr) {
     cerr << "Webserv: syntax error in " << fname << " at line " << lnNbr << " → " << str << endl;
     return (1);
