@@ -148,6 +148,68 @@ short handleDirective(string &str, const string &fname, size_t &lnNbr, WebConfig
     return (0);
 }
 
+short handleLocation(string str, vector<string> &tokens, Location &locTmp, const string &fname, size_t &lnNbr) {
+    if (tokens.size() < 2)
+        return (printError(str, fname, lnNbr));
+
+    if (tokens.size() == 2 && tokens[0] == "route")
+        locTmp.route = tokens[1];
+
+    else if (tokens.size() == 2 && tokens[0] == "root")
+        locTmp.root = tokens[1];
+
+    else if (tokens.size() == 2 && tokens[0] == "autoindex") {
+        if (tokens[1] == "on")
+            locTmp.autoindex = true;
+        else if (tokens[1] == "off")
+            locTmp.autoindex = false;
+        else
+            return (printError(str, fname, lnNbr));
+    }
+
+    else if (tokens.size() == 2 && tokens[0] == "client_max_body_size")
+        locTmp.maxBody = myAtol(tokens[1], str, fname, lnNbr);
+
+    else if (tokens.size() == 2 && tokens[0] == "redirect")
+        locTmp.redirect = tokens[1];
+
+    else if (tokens.size() == 2 && tokens[0] == "upload_store")
+        locTmp.upload = tokens[1];
+
+    else if (tokens.size() == 2 && tokens[0] == "cgi_pass")
+        locTmp.cgi = tokens[1];
+
+    else if (tokens[0] == "index") {
+        locTmp.files.clear();
+        for (size_t i = 1; i < tokens.size(); i++) {
+            for (size_t j = 0; j < locTmp.files.size(); j++) {
+                if (tokens[i] == locTmp.files[j])
+                    return printError(str, fname, lnNbr);
+            }
+            locTmp.files.push_back(tokens[i]);
+        }
+    }
+
+    else if (tokens[0] == "methods") {
+        locTmp.methods.clear();
+        for (size_t i = 1; i < tokens.size(); i++) {
+            for (size_t j = 0; j < locTmp.methods.size(); j++) {
+                if (tokens[i] == locTmp.methods[j])
+                    return printError(str, fname, lnNbr);
+            }
+
+            if (tokens[i] != "GET" && tokens[i] != "POST" && tokens[i] != "DELETE")
+                return printError(str, fname, lnNbr);
+            locTmp.methods.push_back(tokens[i]);
+        }
+    }
+
+    else
+        return (printError(str, fname, lnNbr));
+
+    return (0);
+}
+
 short handleServer(string str, vector<string> &tokens, Server &srvTmp, const string &fname, size_t &lnNbr) {
     if (tokens.size() < 2)
         return (printError(str, fname, lnNbr));
