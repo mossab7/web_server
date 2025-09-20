@@ -22,6 +22,20 @@ enum parse_state
     ERROR
 };
 
+/*
+    NOTE: from what i observed in nginx cgi response parsing:
+    - https://raw.githubusercontent.com/nginx/nginx/refs/heads/master/src/http/modules/ngx_http_fastcgi_module.c
+    - https://raw.githubusercontent.com/nginx/nginx/refs/heads/master/src/http/modules/ngx_http_scgi_module.c
+    all i need to do to handle cgi is just set a flag to ignore the start line and move the headers directly :)
+
+
+    another NOTE: use fallbacks to handle differenct types of requsts, aka pointer to function to handle:
+        - normal http request
+        - file uploads (write chunk directly to file)
+        - cgi (write to the standart input of the process)
+        - ... etc
+*/
+
 class HTTPParser
 {
     // the requst head
@@ -30,12 +44,14 @@ class HTTPParser
     std::string _version;
     strmap      _headers;
 
-    // the requst body (smaller ones)
+    // the requst body (default for now)
     std::string _body;
     size_t      _contentLength;
     size_t      _bytesRead;
 
-    // cgi and file upload stuff
+    // cgi
+    // bool _isCGIResponse;
+    // file upload stuff
     // std::string _filePath;
     // bool chunked transfer;
 
