@@ -13,11 +13,12 @@ CXXFLAGS += -I$(INC_DIR)/utils -I$(INC_DIR)/Config -I$(INC_DIR)/http -g3
 # todo: remove the wildcard functions
 MAIN = src/main.cpp
 PARSING = $(wildcard src/Config/*.cpp)
+ROUTING = $(wildcard src/Routing/*.cpp)
 HTTP = $(wildcard src/http/*.cpp)
 UTILS = $(wildcard src/utils/*.cpp)
 
 
-SRC = $(MAIN) $(UTILS) $(PARSING) $(HTTP)
+SRC = $(MAIN) $(UTILS) $(PARSING) $(ROUTING) $(HTTP)
 OBJ = $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
 
