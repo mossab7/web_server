@@ -8,9 +8,11 @@ class Routing
 {
     private:
         WebConfigFile &_config;
-        
+
     public:
         Routing(WebConfigFile &config);
+
+        Server *findServer(const std::string &host);
 };
 
 #endif
