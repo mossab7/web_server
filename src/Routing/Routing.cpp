@@ -69,3 +69,23 @@ Location *Routing::findLocation(Server &server, const std::string &request_path)
     }
     return (best);
 }
+
+/**
+ * @brief Checks if the given HTTP method is allowed for a specific Location.
+ *
+ * This function iterates through all methods defined in the Location object
+ * and returns true if the provided method matches any of the allowed methods.
+ *
+ * @param loc The Location object containing allowed HTTP methods.
+ * @param method The HTTP method from the client request to check.
+ * @return true if the method is allowed for this Location, false otherwise.
+ */
+bool Routing::isMethodAllowed(Location &loc, const std::string &method)
+{
+    for (size_t i = 0; i < loc.methods.size(); i++)
+    {
+        if (loc.methods[i] == method)
+            return (true);
+    }
+    return (false);
+}
