@@ -1,4 +1,4 @@
-#include "Parsing.hpp"
+#include "ConfigParser.hpp"
 
 /**
  * @brief Parses the full web server config file into a WebConfigFile object.
@@ -108,7 +108,7 @@ short handleDirective(string &str, const string &fname, size_t &lnNbr, WebConfig
  * @brief Parse a single server directive and update the Server object.
  *
  * Supports directives: host, port, server_name, root, maxBody, index files, and error_page.
- * Validates IP, port range, unique index files, and error_page syntax.
+ * Validates host, port range, unique index files, and error_page syntax.
  *
  * @param str    Original config line
  * @param tokens Tokenized line components
@@ -126,7 +126,7 @@ short handleServer(string str, vector<string> &tokens, Server &srvTmp, const str
         struct in_addr  addr;
         if (!inet_aton(tokens[1].c_str(), &addr))
             return (printError(str, fname, lnNbr));
-        srvTmp.ip = tokens[1];
+        srvTmp.host = tokens[1];
     }
 
     else if (tokens.size() == 2 && tokens[0] == "port")
@@ -383,11 +383,11 @@ string trim(const string &str) {
 /**
  * @brief Initialize a Server object with standard defaults.
  *
- * Sets default values for IP, port, server name, root directory, 
+ * Sets default values for host, port, server name, root directory, 
  * index files, max client body size, and standard error pages.
  */
 Server::Server() {
-    ip = "127.0.0.1";
+    host = "127.0.0.1";
     port = 80;
     name = "localip";
     root = "/";

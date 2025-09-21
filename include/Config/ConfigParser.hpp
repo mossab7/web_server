@@ -1,3 +1,6 @@
+#ifndef CONFIGPARSER
+#define CONFIGPARSER
+
 #include <iostream>
 #include <algorithm>
 #include <arpa/inet.h>
@@ -33,13 +36,13 @@ class WebConfigFile {
  * @class Server
  * @brief Holds all config for one server block.
  *
- * Includes IP, port, name, root, client body limit, index files,
+ * Includes host, port, name, root, client body limit, index files,
  * error pages, and its locations.
  */
 class Server {
     public:
         int port;
-        string ip;
+        string host;
         size_t maxBody;
         string name;
         string root;
@@ -82,3 +85,5 @@ size_t myAtol(string str, string &line, const string &fname, size_t &lnNbr);
 short handleDirective(string &str, const string &fname, size_t &lnNbr, WebConfigFile &config);
 short handleServer(string str, vector<string> &tokens, Server &srvTmp, const string &fname, size_t &lnNbr);
 short handleLocation(string str, vector<string> &tokens, Location &locTmp, const string &fname, size_t &lnNbr);
+
+#endif
