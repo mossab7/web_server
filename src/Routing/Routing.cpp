@@ -39,3 +39,33 @@ Server *Routing::findServer(const std::string &host)
     }
     return (NULL);
 }
+
+/**
+ * @brief Finds the Location that best matches the request path.
+ *
+ * Returns the Location with the longest route that matches the beginning
+ * of the request path. If no match is found, returns NULL.
+ *
+ * @param server The server containing the locations.
+ * @param request_path The HTTP request path to match.
+ * @return Pointer to the best matching Location, or NULL if none found.
+ */
+Location *Routing::findLocation(Server &server, const std::string &request_path)
+{
+    Location *best = NULL;
+    size_t best_len = 0;
+
+    for (size_t i = 0; i < server.locations.size(); i++)
+    {
+        Location &loc = server.locations[i];
+        if (request_path.compare(0, loc.route.length(), loc.route) == 0)
+        {
+            if (loc.route.length() > best_len)
+            {
+                best = &loc;
+                best_len = loc.route.length();
+            }
+        }
+    }
+    return (best);
+}

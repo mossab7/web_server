@@ -6,13 +6,14 @@
 
 class Routing
 {
-    private:
-        WebConfigFile &_config;
+private:
+    WebConfigFile &_config;
 
-    public:
-        Routing(WebConfigFile &config);
+public:
+    Routing(WebConfigFile &config);
 
-        Server *findServer(const std::string &host);
+    Server *findServer(const std::string &host);
+    Location *findLocation(Server &server, const std::string &request_path);
 };
 
 #endif
