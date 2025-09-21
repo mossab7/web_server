@@ -1,4 +1,5 @@
 #include "ConfigParser.hpp"
+#include "/home/souaammo/goinfre/web_server/include/Routing/Routing.hpp"
 #include "HTTPParser.hpp"
 #include <iostream>
 #include <cassert>
@@ -174,9 +175,11 @@ int main(int ac, char **av) {
         return (EXIT_FAILURE);
     }
     WebConfigFile config;
-
+    
     parseConfigFile(config, av[1]);
 
+    Routing ss(config);
+    
     // std::cout << "Running HTTPParser Test Suite\n" << std::endl;
     
     // test_basic_get();
@@ -190,5 +193,7 @@ int main(int ac, char **av) {
     
     // std::cout << "🎉 All tests passed!" << std::endl;
     
+    (void)ss;
+
     return 0;
 }
