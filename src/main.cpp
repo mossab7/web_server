@@ -178,9 +178,9 @@ int main(int ac, char **av) {
 
     WebConfigFile config;
 
-    parseConfigFile(config, av[1]);
+    if (!parseConfigFile(config, av[1]))
+        Routing routing(config);
 
-    Routing ss(config);
     
     // std::cout << "Running HTTPParser Test Suite\n" << std::endl;
     
@@ -194,8 +194,6 @@ int main(int ac, char **av) {
     // test_large_body();
     
     // std::cout << "🎉 All tests passed!" << std::endl;
-    
-    (void)ss;
 
     return 0;
 }
