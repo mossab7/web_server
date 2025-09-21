@@ -22,10 +22,14 @@ int main(int ac, char **av)
     Server *srv = routing.findServer("localhost:8080");
     if (srv)
         cout << "Server found: " << srv->host << endl;
+    else
+        return (1);
 
     Location *loc = routing.findLocation(*srv, "/images/logo.png");
     if (loc)
         cout << "Location found: " << loc->route << endl;
+    else
+        return (1);
 
     bool allowed = routing.isMethodAllowed(*loc, "GET");
     cout << "GET allowed? " << (allowed ? "Yes" : "No") << endl;
