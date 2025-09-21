@@ -1,3 +1,4 @@
+#include "ConfigParser.hpp"
 #include "HTTPParser.hpp"
 #include <iostream>
 #include <cassert>
@@ -166,19 +167,28 @@ void test_large_body() {
     std::cout << "✓ Large body test passed\n" << std::endl;
 }
 
-int main() {
-    std::cout << "Running HTTPParser Test Suite\n" << std::endl;
+int main(int ac, char **av) {
+
+    if (ac != 2)
+    {
+        return (EXIT_FAILURE);
+    }
+    WebConfigFile config;
+
+    parseConfigFile(config, av[1]);
+
+    // std::cout << "Running HTTPParser Test Suite\n" << std::endl;
     
-    test_basic_get();
-    test_post_with_body();
-    test_chunked_parsing();
-    test_case_insensitive_headers();
-    test_whitespace_handling();
-    test_invalid_requests();
-    test_reset_functionality();
-    test_large_body();
+    // test_basic_get();
+    // test_post_with_body();
+    // test_chunked_parsing();
+    // test_case_insensitive_headers();
+    // test_whitespace_handling();
+    // test_invalid_requests();
+    // test_reset_functionality();
+    // test_large_body();
     
-    std::cout << "🎉 All tests passed!" << std::endl;
+    // std::cout << "🎉 All tests passed!" << std::endl;
     
     return 0;
 }
