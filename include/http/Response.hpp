@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <cstring>
 #include <sstream>
+#include "Routing.hpp"
 
 // helper macro to stringify values
 #define SSTR(x) static_cast<std::ostringstream &>((std::ostringstream() << x)).str()
@@ -50,5 +51,7 @@ public:
     // true if headers + file are fully sent
     bool isComplete() const;
 };
+
+HTTPResponse handleRequest(Routing &routing, const string &host, const string &request_path, const string &method);
 
 #endif
