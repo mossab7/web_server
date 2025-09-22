@@ -173,7 +173,7 @@ bool Client::hasError() const
     return _state == ERROR_STATE;
 }
 
-bool Client::shouldKeepAlive() const
+bool Client::shouldKeepAlive() 
 {
     // Check Connection header
     std::string connection = _parser.getHeader("Connection");

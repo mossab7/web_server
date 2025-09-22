@@ -46,7 +46,7 @@ public:
     ClientState getState() const;
     bool isComplete() const;     // Request fully processed and response sent
     bool hasError() const;
-    bool shouldKeepAlive() const;
+    bool shouldKeepAlive() ;
     
     // Reset for keep-alive connections
     void reset();

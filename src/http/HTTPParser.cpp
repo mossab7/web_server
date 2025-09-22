@@ -12,7 +12,7 @@ HTTPParser::HTTPParser():
     _body.reserve(BUFF_SIZE);
 }
 
-std::string&    HTTPParser::getMethod(void) { return _method; }
+std::string&    HTTPParser::getMethod(void) {return _method; }
 std::string&    HTTPParser::getVers(void) { return _version; }
 std::string&    HTTPParser::getUri(void) { return _uri; }
 

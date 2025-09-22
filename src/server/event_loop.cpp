@@ -1,7 +1,9 @@
 #include "Epoll.hpp"
 #include "Socket.hpp"
 #include "Client.hpp"
+#include "../utils/Logger.hpp"
 #include <unordered_map>
+#include <iostream>
 
 void event_loop()
 {
@@ -21,7 +23,7 @@ void event_loop()
             try 
             {
                 Socket *event_socket = &events[i];
-                if (EVENT_HAS_ERROR(*event_socket)) 
+                if (EVENT_HAS_ERROR(event_socket->get_event())) 
                 {
                     if (*event_socket == server_socket) 
                     {
@@ -50,38 +52,69 @@ void event_loop()
                     // Handle client events
                     Client *client = clients[event_socket->get_fd()];
                     
-                    if (EVENT_HAS_READ(*event_socket))
+                    if (EVENT_HAS_READ(event_socket->get_event()))
                     {
-                        client->read();
+                        // Handle reading request data
+                        bool needMoreData = client->readRequest();
                         
-                        // If client is ready to send, toggle to write events
-                        if (client->needs_write())
+                        if (client->hasError()) 
                         {
-                            epoll.modify_fd(*event_socket, EPOLLOUT);
-                        }
-                    }
-                    
-                    if (EVENT_HAS_WRITE(*event_socket))
-                    {
-                        client->send();
-                        
-                        // Check if we're done or need to continue writing
-                        if (client->is_done())
-                        {
+                            // Error occurred, clean up client
                             epoll.remove_fd(*event_socket);
                             delete client;
                             clients.erase(event_socket->get_fd());
+                            continue;
                         }
-                        else if (client->needs_write())
+                        
+                        if (!needMoreData) 
                         {
-                            // Keep waiting for write events
-                            epoll.modify_fd(*event_socket, EPOLLOUT);
+                            // Request complete, switch to write mode for response
+                            if (client->getState() == SENDING_RESPONSE) 
+                            {
+                                epoll.modify_fd(*event_socket, EPOLLOUT);
+                            }
+                            else if (client->getState() == CLOSED) 
+                            {
+                                // Client closed connection
+                                epoll.remove_fd(*event_socket);
+                                delete client;
+                                clients.erase(event_socket->get_fd());
+                            }
                         }
-                        else
+                        // If needMoreData is true, keep waiting for more EPOLLIN events
+                    }
+                    
+                    if (EVENT_HAS_WRITE(event_socket->get_event()))
+                    {
+                        // Handle sending response data
+                        bool needMoreWrite = client->sendResponse();
+                        
+                        if (client->hasError()) 
                         {
-                            // Switch back to read events
-                            epoll.modify_fd(*event_socket, EPOLLIN);
+                            // Error occurred, clean up client
+                            epoll.remove_fd(*event_socket);
+                            delete client;
+                            clients.erase(event_socket->get_fd());
+                            continue;
                         }
+                        
+                        if (!needMoreWrite) 
+                        {
+                            // Response complete, check connection state
+                            if (client->getState() == CLOSED) 
+                            {
+                                // Close connection
+                                epoll.remove_fd(*event_socket);
+                                delete client;
+                                clients.erase(event_socket->get_fd());
+                            }
+                            else if (client->getState() == KEEP_ALIVE) 
+                            {
+                                // Keep connection alive, switch back to read mode
+                                epoll.modify_fd(*event_socket, EPOLLIN);
+                            }
+                        }
+                        // If needMoreWrite is true, keep waiting for more EPOLLOUT events
                     }
                 }
             } 

@@ -74,7 +74,7 @@ public:
     // an empty string will be returned
     std::string&    getMethod(void);
     std::string&    getUri(void);
-    std::string&    getVers(void);
+    std::string&    getVers(void) ;
 
     strmap&         getHeaders(void);
     std::string&    getHeader(const std::string& key);
