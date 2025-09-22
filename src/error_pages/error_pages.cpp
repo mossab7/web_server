@@ -7,7 +7,7 @@
  * Each key is an HTTP status code (int), and the value is the HTML string
  * representing the error page.
  */
-std::map<int, std::string> defaultErrorPages;
+map<int, string> defaultErrorPages;
 
 /**
  * @brief Initialize the defaultErrorPages map with standard HTTP error pages.
@@ -70,11 +70,11 @@ void initErrorPages()
  * Otherwise, return a default "Unknown Error" HTML page.
  *
  * @param code HTTP status code
- * @return const std::string& Reference to the HTML content
+ * @return const string& Reference to the HTML content
  */
-const std::string &getErrorPage(int code)
+const string &getErrorPage(int code)
 {
-      static std::string emptyPage =
+      static string emptyPage =
           "<html><head><title>Error</title></head>"
           "<body><center><h1>Unknown Error</h1></center>"
           "<hr><center>webserv</center></body></html>";
