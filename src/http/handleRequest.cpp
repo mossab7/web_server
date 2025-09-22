@@ -17,16 +17,19 @@ HTTPResponse createErrorResponse(int code)
 
 HTTPResponse handleRequest(Routing &routing, const string &host, const string &request_path, const string &method)
 {
+    cout << "111111111111111" << endl;
     Server *server = routing.findServer(host);
     if (!server)
         return (createErrorResponse(404));
-
+    cout << "222222222222222" << endl;
     Location *loc = routing.findLocation(*server, request_path);
     if (!loc)
         return (createErrorResponse(404));
+    cout << "33333333333333333" << endl;
 
     if (!routing.isMethodAllowed(*loc, method))
         return (createErrorResponse(405));
+    cout << "44444444444444444444" << endl;
 
     if (!loc->redirect.empty())
     {
@@ -35,10 +38,14 @@ HTTPResponse handleRequest(Routing &routing, const string &host, const string &r
         resp.endHeaders();
         return (resp);
     }
+    cout << "555555555555555555555" << endl;
+
+    string filepath = loc->root + request_path;
+    HTTPResponse resp;
+    if (!resp.attachFile(filepath))
 
     cout << "Good Requesteeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" << endl;
 
-    HTTPResponse resp;
     resp.addHeader("Content-Type", "text/html");
     resp.endHeaders();
     return (resp);
