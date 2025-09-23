@@ -3,13 +3,22 @@
 #include <cstring>
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 
-Client::Client() : _socket(), _response(nullptr), _state(READING_REQUEST) 
+// Helper function for converting int to string in C++98
+std::string intToString(int value) 
+{
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+Client::Client() : _socket(), _response(NULL), _state(READING_REQUEST) 
 {
     memset(_readBuffer, 0, BUFF_SIZE);
 }
 
-Client::Client(const Socket &socket) : _socket(socket), _response(nullptr), _state(READING_REQUEST) 
+Client::Client(const Socket &socket) : _socket(socket), _response(NULL), _state(READING_REQUEST) 
 {
     memset(_readBuffer, 0, BUFF_SIZE);
 }
@@ -18,7 +27,7 @@ Client::~Client()
 {
     if (_response) {
         delete _response;
-        _response = nullptr;
+        _response = NULL;
     }
 }
 
@@ -92,8 +101,8 @@ void Client::_processRequest()
     body += "<p>Version: " + _parser.getVers() + "</p>";
     body += "</body></html>";
     
-    _response->setBody(body);
     _response->endHeaders();
+    _response->setBody(body);
     
     _state = SENDING_RESPONSE;
 }
@@ -112,7 +121,7 @@ void Client::_buildErrorResponse(int statusCode, const std::string& message)
     _response->addHeader("Server", "WebServ/1.0");
     _response->addHeader("Connection", "close");
     
-    std::string body = "<html><body><h1>" + std::to_string(statusCode) + " " + statusText + "</h1>";
+    std::string body = "<html><body><h1>" + intToString(statusCode) + " " + statusText + "</h1>";
     body += "<p>" + message + "</p></body></html>";
     
     _response->setBody(body);
@@ -192,7 +201,7 @@ void Client::reset()
     // Clean up current response
     if (_response) {
         delete _response;
-        _response = nullptr;
+        _response = NULL;
     }
     
     // Reset parser for next request

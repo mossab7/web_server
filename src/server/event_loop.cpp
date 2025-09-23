@@ -2,8 +2,14 @@
 #include "Socket.hpp"
 #include "Client.hpp"
 #include "../utils/Logger.hpp"
-#include <unordered_map>
+#include <map>
 #include <iostream>
+#include <csignal>
+
+std::string intToString(int value);
+
+// External shutdown flag (defined in main.cpp)
+extern volatile sig_atomic_t g_shutdown;
 
 void event_loop()
 {
@@ -14,8 +20,11 @@ void event_loop()
     server_socket.set_non_blocking();
     epoll.add_fd(server_socket);
 
-    std::unordered_map<int, Client*> clients;
-    while (true) 
+    std::map<int, Client*> clients;
+    Logger logger;
+    logger.info("Event loop started");
+    
+    while (!g_shutdown) 
     {
         std::vector<Socket> events = epoll.wait();
         for (size_t i = 0; i < events.size(); i++) 
@@ -41,6 +50,7 @@ void event_loop()
                 
                 if (*event_socket == server_socket) 
                 {
+                    logger.debug("New incoming connection from client " + intToString(event_socket->get_fd()));
                     // Accept new connection
                     Socket client_socket = server_socket.accept();
                     client_socket.set_non_blocking();
@@ -87,6 +97,7 @@ void event_loop()
                     if (EVENT_HAS_WRITE(event_socket->get_event()))
                     {
                         // Handle sending response data
+                        logger.debug("Sending response to client " + intToString(event_socket->get_fd()));
                         bool needMoreWrite = client->sendResponse();
                         
                         if (client->hasError()) 
@@ -132,4 +143,14 @@ void event_loop()
             }
         }
     }
+    
+    // Cleanup: Close all client connections
+    logger.info("Cleaning up connections...");
+    for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
+    {
+        epoll.remove_fd(it->first);
+        delete it->second;
+    }
+    clients.clear();
+    logger.info("Event loop shutdown complete");
 }
