@@ -82,6 +82,7 @@ bool Client::sendResponse()
     }
     
     return _sendResponseChunk();
+    
 }
 
 void Client::_processRequest()
@@ -100,7 +101,7 @@ void Client::_processRequest()
     body += "<p>URI: " + _parser.getUri() + "</p>";
     body += "<p>Version: " + _parser.getVers() + "</p>";
     body += "</body></html>";
-    
+    _response->addHeader("Content-Length", SSTR(body.size()));
     _response->endHeaders();
     _response->setBody(body);
     

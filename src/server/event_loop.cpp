@@ -97,7 +97,7 @@ void event_loop()
                     if (EVENT_HAS_WRITE(event_socket->get_event()))
                     {
                         // Handle sending response data
-                        logger.debug("Sending response to client " + intToString(event_socket->get_fd()));
+                        //logger.debug("Sending response to client " + intToString(event_socket->get_fd()));
                         bool needMoreWrite = client->sendResponse();
                         
                         if (client->hasError()) 
@@ -111,19 +111,20 @@ void event_loop()
                         
                         if (!needMoreWrite) 
                         {
+                            logger.debug("Response sent to client " + intToString(event_socket->get_fd()));
                             // Response complete, check connection state
-                            if (client->getState() == CLOSED) 
-                            {
+                            // if (client->getState() == CLOSED) 
+                            // {
                                 // Close connection
                                 epoll.remove_fd(*event_socket);
                                 delete client;
                                 clients.erase(event_socket->get_fd());
-                            }
-                            else if (client->getState() == KEEP_ALIVE) 
-                            {
-                                // Keep connection alive, switch back to read mode
-                                epoll.modify_fd(*event_socket, EPOLLIN);
-                            }
+                            // }
+                            // else if (client->getState() == KEEP_ALIVE) 
+                            // {
+                            //     // Keep connection alive, switch back to read mode
+                            //     epoll.modify_fd(*event_socket, EPOLLIN);
+                            // }
                         }
                         // If needMoreWrite is true, keep waiting for more EPOLLOUT events
                     }

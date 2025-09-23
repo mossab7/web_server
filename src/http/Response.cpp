@@ -40,6 +40,8 @@ void    HTTPResponse::setBody(const std::string& data)
     // ensure headers are properly terminated before adding body
     if (_response.size() && _response.rfind(CRLF CRLF) != _response.size() - 4)
         _response += CRLF;  // blank line between headers and body
+  //  addHeader("Content-Length", SSTR(data.size()));
+    //endHeaders();
     _response += data;
 }
 
