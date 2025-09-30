@@ -35,6 +35,8 @@ public:
     void remove_fd(Socket &socket);
     void modify_fd(Socket &socket, uint32_t events);
     std::vector<Socket> wait(int timeout = -1);
+    static Epoll& getInstance();
 };
+
 
 #endif //EPOLL_HPP

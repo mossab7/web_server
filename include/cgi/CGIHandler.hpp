@@ -133,8 +133,8 @@ void CGIHandler::start()
         // Parent process
         _outputPipe.set_non_blocking();
         _inputPipe.set_non_blocking();
-        Epoll::getInstance().add_fd(_outputPipe.read_fd(), EVENT_READ);
-        Epoll::getInstance().add_fd(_inputPipe.write_fd(), EVENT_WRITE);
+        Epoll::getInstance().add_fd(_outputPipe.read_fd(), EPOLLIN);
+        Epoll::getInstance().add_fd(_inputPipe.write_fd(), EPOLLOUT);
         _inputPipe.closeRead();
         _outputPipe.closeWrite();
         _isRunning = true;

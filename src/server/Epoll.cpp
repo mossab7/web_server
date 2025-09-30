@@ -80,3 +80,9 @@ void Epoll::remove_fd(Socket &socket)
 {
     remove_fd(socket.get_fd());
 }
+
+Epoll& Epoll::getInstance()
+{
+    static Epoll instance;
+    return instance;
+}
