@@ -10,6 +10,7 @@ HTTPParser::HTTPParser():
     _readChunkSize(0),
     _bodyHandler(NULL),
     _data(NULL),
+    _isCGIResponse(false),
     _state(START_LINE),
     _buffOffset(0)
 {
@@ -29,6 +30,9 @@ std::string&    HTTPParser::getBody(void) { return _body; }
 parse_state     HTTPParser::getState(void) { return _state; }
 bool    HTTPParser::isComplete(void) { return _state == COMPLETE; }
 bool    HTTPParser::isError(void) { return _state == ERROR; }
+
+void    HTTPParser::setCGIMode(bool m) { _isCGIResponse = m; }
+bool    HTTPParser::getCGIMode(void) { return _isCGIResponse; }
 
 void    HTTPParser::reset(void)
 {
@@ -71,7 +75,13 @@ void    HTTPParser::_parse()
 
         switch (_state)
         {
-        case START_LINE: _parseStartLine(); break;
+        case START_LINE:
+            if (!_isCGIResponse)
+            {
+                _parseStartLine();
+                break;
+            }
+        /* fall through */
         case HEADERS: _parseHeaders(); break;
         case BODY: _parseBody(); break;
         case CHUNK_SIZE: _parseChunkedSize(); break;

@@ -73,7 +73,7 @@ class HTTPParser
     void        *_data;
 
     // cgi
-    // bool _isCGIResponse;
+    bool _isCGIResponse;
     // file upload stuff
     // std::string _filePath;
 
@@ -107,6 +107,9 @@ public:
     std::string&    getBody(void);
 
     void    setBodyHandler(bodyHandler bh, void *data);
+    
+    void    setCGIMode(bool m);
+    bool    getCGIMode(void);
 
     parse_state     getState();
     bool            isComplete();
