@@ -13,6 +13,7 @@
 #define NPOS        std::string::npos
 
 typedef std::map<std::string, std::string> strmap;
+typedef void (*bodyHandler)(const char* buff, size_t size, void *data);
 
 enum parse_state
 {
@@ -68,6 +69,9 @@ class HTTPParser
     size_t  _chunkSize;
     size_t  _readChunkSize; // the number of bytes read from the chunk
 
+    bodyHandler _bodyHandler;
+    void        *_data;
+
     // cgi
     // bool _isCGIResponse;
     // file upload stuff
@@ -101,6 +105,8 @@ public:
     std::string&    getHeader(const std::string& key);
 
     std::string&    getBody(void);
+
+    void    setBodyHandler(bodyHandler bh, void *data);
 
     parse_state     getState();
     bool            isComplete();
