@@ -55,6 +55,8 @@ void    HTTPParser::reset(void)
 
     _bodyHandler = NULL;
     _data = NULL;
+
+    _isCGIResponse = false;
 }
 
 void    HTTPParser::addChunk(char* buff, size_t size)
