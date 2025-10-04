@@ -1,5 +1,5 @@
-#ifndef CONFIGPARSER
-#define CONFIGPARSER
+#ifndef CONFIGPARSER_HPP
+#define CONFIGPARSER_HPP
 
 #include <iostream>
 #include <algorithm>
@@ -11,79 +11,96 @@
 #include <map>
 #include <set>
 
+#include "error_pages.hpp"
+
 using namespace std;
 
-class   WebConfigFile;
-class   Server;
-class   Location;
+class WebConfigFile;
+struct Server;
+struct Location;
 
 /**
- * @class WebConfigFile
- * @brief Represents the full web server configuration.
+ * @brief Represents the configuration of the entire web server setup.
  *
- * Stores all server blocks defined in a configuration file, 
- * including each server's associated location blocks.
- *
- * @var servers
- * @brief Container holding all Server objects parsed from the configuration.
+ * Stores all server definitions and provides methods to access and modify them.
  */
-class WebConfigFile {
-    public:
-        vector<Server> servers;
+class WebConfigFile
+{
+private:
+    vector<Server> _servers; ///< List of all servers in the configuration.
+
+public:
+    /**
+     * @brief Constructs a WebConfigFile from a configuration file.
+     * @param fName Path to the configuration file.
+     */
+    WebConfigFile(const string &fName);
+
+    /**
+     * @brief Returns a reference to the vector of all servers.
+     */
+    vector<Server> &getServers();
+
+    /**
+     * @brief Returns a server by its name.
+     * @param name Name of the server.
+     * @return Server object (default if not found).
+     */
+    Server getServer(const string &name);
+
+    /**
+     * @brief Adds a server to the configuration.
+     * @param server Server object to add.
+     */
+    void addServer(const Server &server);
 };
 
 /**
- * @class Server
- * @brief Holds all config for one server block.
+ * @brief Represents a single server configuration.
  *
- * Includes host, port, name, root, client body limit, index files,
- * error pages, and its locations.
+ * Contains network info, root directory, max body size, error pages,
+ * and its associated locations.
  */
-class Server {
-    public:
-        int port;
-        string host;
-        size_t maxBody;
-        string name;
-        string root;
-        vector<string> files;
-        vector<Location> locations;
-        map<int, string> errors;
+struct Server
+{
+    int port;                   ///< Server port number.
+    string host;                ///< Server host address.
+    size_t maxBody;             ///< Maximum allowed body size.
+    string name;                ///< Server name.
+    string root;                ///< Root directory.
+    vector<string> files;       ///< Default index files.
+    vector<Location> locations; ///< Location-specific configurations.
+    map<int, string> errors;    ///< Custom error pages.
 
-        Server();
+    /**
+     * @brief Default constructor initializing default values.
+     */
+    Server();
 };
 
 /**
- * @class Location
- * @brief Holds all config for a location block within a server.
+ * @brief Represents a location block within a server.
  *
- * Stores path, root, client body limit, index files, allowed methods,
- * autoindex flag, CGI path, redirects, and upload folder.
+ * Contains settings like root, allowed methods, redirections, CGI,
+ * autoindex, and uploaded file storage.
  */
-class Location {
-    public:
-        string route;
-        string root;
-        size_t maxBody;
-        bool autoindex;
-        string cgi;
-        string upload;
-        string redirect;
-        vector<string> files;
-        vector<string> methods;
+struct Location
+{
+    string route;           ///< Route path for this location.
+    string root;            ///< Root directory override.
+    size_t maxBody;         ///< Maximum allowed body size for this location.
+    bool autoindex;         ///< Whether directory listing is enabled.
+    string cgi;             ///< CGI script path.
+    string upload;          ///< Upload directory path.
+    string redirect;        ///< Redirect URL.
+    vector<string> files;   ///< Default index files for this location.
+    vector<string> methods; ///< Allowed HTTP methods (GET, POST, DELETE).
 
-        void ApplyDefaults(Server server);
+    /**
+     * @brief Constructs a Location with default values from a Server.
+     * @param server Server object to apply defaults from.
+     */
+    Location(Server server);
 };
-
-string trim(const string &str);
-string reduceSpaces(const string &str);
-string removeComment(const string &str);
-vector<string> split(const string &str);
-short parseConfigFile(WebConfigFile &config, const string &fname);
-short printError(string &str, const string &fname, size_t &lnNbr);
-size_t myAtol(string str, string &line, const string &fname, size_t &lnNbr);
-short handleDirective(string &str, const string &fname, size_t &lnNbr, WebConfigFile &config);
-short handleServer(string str, vector<string> &tokens, Server &srvTmp, const string &fname, size_t &lnNbr);
-short handleLocation(string str, vector<string> &tokens, Location &locTmp, const string &fname, size_t &lnNbr);
 
 #endif
