@@ -21,6 +21,8 @@ HTTPParser::HTTPParser():
 std::string&    HTTPParser::getMethod(void) { return _method; }
 std::string&    HTTPParser::getVers(void) { return _version; }
 std::string&    HTTPParser::getUri(void) { return _uri; }
+std::string&    HTTPParser::getQuery(void) { return _query; }
+std::string&    HTTPParser::getFragment(void) { return _fragment; }
 
 strmap&         HTTPParser::getHeaders(void) { return _headers; }
 std::string&    HTTPParser::getHeader(const std::string& key) { return _headers[key]; }
@@ -134,6 +136,22 @@ void    HTTPParser::_parseStartLine()
         _state = ERROR;
     else
         _state = HEADERS;
+    
+    if (_state == ERROR)
+        return;
+
+    size_t fragm = _uri.find('#');
+    if (fragm != NPOS)
+    {
+        _fragment = _uri.substr(fragm + 1);
+        _uri = _uri.erase(fragm);
+    }
+    size_t query = _uri.find('?');
+    if (query != NPOS)
+    {
+        _query = _uri.substr(query + 1);
+        _uri = _uri.substr(0, query);
+    }
 }
 void    HTTPParser::_parseHeaders()
 {
