@@ -7,13 +7,13 @@
 #define SSTR(x) static_cast<std::ostringstream &>((std::ostringstream() << x)).str()
 
 Server::Server(ServerConfig &config, FdManager &fdm) 
-    : EventHandler(config, fdm), socket(AF_INET, SOCK_STREAM, 0)
+    : EventHandler(config, fdm) 
 {
     Logger logger;
     
-    // Set socket options for reuse
+    // Set _socket options for reuse
     int opt = 1;
-    if (setsockopt(socket.get_fd(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+    if (setsockopt(_socket.get_fd(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         throw std::runtime_error("Failed to set SO_REUSEADDR");
     }
     
@@ -23,21 +23,21 @@ Server::Server(ServerConfig &config, FdManager &fdm)
     address.sin_addr.s_addr = inet_addr(config.host.c_str());
     address.sin_port = htons(config.port);
     
-    socket.bind(address);
-    socket.listen();
-    socket.set_non_blocking();
+    _socket.bind(address);
+    _socket.listen();
+    _socket.set_non_blocking();
     
     logger.info("Server initialized on " + config.host + ":" + SSTR(config.port));
 }
 
 Server::~Server()
 {
-    socket.close();
+    _socket.close();
 }
 
 int Server::get_fd() const
 {
-    return socket.get_fd();
+    return _socket.get_fd();
 }
 
 void Server::onReadable()
@@ -46,7 +46,7 @@ void Server::onReadable()
     
     try {
         // Accept new connection
-        Socket client_socket = socket.accept();
+        Socket client_socket = _socket.accept();
         client_socket.set_non_blocking();
         
         logger.info("New client connection accepted on fd: " + SSTR(client_socket.get_fd()));
@@ -76,6 +76,6 @@ void Server::onError()
     logger.error("Error on server socket fd: " + SSTR(get_fd()));
     
     // Close socket and remove from epoll
-    socket.close();
+    _socket.close();
     _fd_manager.remove(get_fd());
 }

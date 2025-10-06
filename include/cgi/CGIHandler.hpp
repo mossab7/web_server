@@ -15,6 +15,7 @@
 #include "HTTPParser.hpp"
 #include "Epoll.hpp"
 #include "Response.hpp"
+#include "FdManager.hpp"
 
 #define BUFFER_SIZE 4096
 
@@ -30,8 +31,7 @@ class CGIHandler : public EventHandler
         HTTPParser &_parser;
         HTTPResponse _response;
         bool _isRunning;
-        char *_bodyBuffer;
-        char *_buffer;
+        const char *_bodyBuffer;
 
         CGIHandler(const CGIHandler &other);
         CGIHandler &operator=(const CGIHandler &other);
@@ -76,9 +76,11 @@ void CGIHandler::onReadable()
 
 void CGIHandler::onWritable()
 {
-    if (_bodyBuffer && strlen(_bodyBuffer) > 0)
+    _bodyBuffer = _parser.getBody();
+    size_t bodySize = _parser.getBodySize();
+    if (_bodyBuffer && bodySize > 0)
     {
-        int bytesWritten = _inputPipe.write(_bodyBuffer, strlen(_bodyBuffer));
+        int bytesWritten = _inputPipe.write(_bodyBuffer, bodySize);
         if (bytesWritten > 0)
         {
             _bodyBuffer += bytesWritten;
@@ -303,7 +305,6 @@ void CGIHandler::initEnv(HTTPParser &parser)
 CGIHandler::CGIHandler(const std::string &scriptPath, HTTPParser &parser, ServerConfig &config, FdManager &fdm)
     : _scriptPath(scriptPath), _pid(-1), _isRunning(false) , _parser(parser), EventHandler(config, fdm)
 {
-    _buffer = parser.getBodyBuffer();
 }
 
 CGIHandler::~CGIHandler()

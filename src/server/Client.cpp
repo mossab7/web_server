@@ -101,12 +101,12 @@ void Client::onError()
     delete this; 
 }
 
-Client::Client(ServerConfig &config, FdManager &fdm) : EventHandler(config, fdm), _socket(), _response(NULL), _state(READING_REQUEST) 
+Client::Client(ServerConfig &config, FdManager &fdm) : EventHandler(config, fdm), _response(NULL), _state(READING_REQUEST) 
 {
     memset(_readBuffer, 0, BUFF_SIZE);
 }
 
-Client::Client(const Socket &socket, ServerConfig &config, FdManager &fdm) : EventHandler(config, fdm), _socket(socket), _response(NULL), _state(READING_REQUEST) 
+Client::Client(Socket &socket, ServerConfig &config, FdManager &fdm) : EventHandler(config, fdm, socket), _response(NULL), _state(READING_REQUEST) 
 {
     memset(_readBuffer, 0, BUFF_SIZE);
 }

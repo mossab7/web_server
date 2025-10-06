@@ -31,7 +31,6 @@ void EventLoop::run()
                 
                 // Handle error events first
                 if (ERROR_EVENT(events[i].events)) {
-                    logger.warning("Error event on fd: " + SSTR(events[i].data.fd));
                     handler->onError();
                     continue; // Don't process other events after error
                 }

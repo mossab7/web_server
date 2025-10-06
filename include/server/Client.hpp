@@ -22,7 +22,6 @@ enum ClientState {
 class Client : public EventHandler
 {
     private:
-        Socket _socket;
         HTTPParser _parser;
         HTTPResponse* _response;
         ClientState _state;
@@ -39,7 +38,7 @@ class Client : public EventHandler
     public:
 
     Client(ServerConfig &config, FdManager &fdm);
-    Client(const Socket &socket, ServerConfig &config, FdManager &fdm);
+    Client(Socket &socket, ServerConfig &config, FdManager &fdm);
     ~Client();
     
     // Main I/O operations
