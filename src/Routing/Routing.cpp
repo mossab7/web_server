@@ -17,7 +17,7 @@ Routing::Routing(WebConfigFile &config) : _config(config)
 /**
  * @brief Finds and returns a pointer to the server that matches the given host name.
  *
- * This function searches through all servers in the configuration (_config) 
+ * This function searches through all servers in the configuration (_config)
  * and returns a pointer to the ServerConfig whose 'name' matches the provided host string.
  * If no matching server is found, it returns NULL.
  *
@@ -34,7 +34,6 @@ ServerConfig *Routing::findServer(const std::string &host)
     }
     return (NULL);
 }
-
 
 /**
  * @brief Finds the Location that best matches the request path.
@@ -84,4 +83,23 @@ bool Routing::isMethodAllowed(Location &loc, const std::string &method)
             return (true);
     }
     return (false);
+}
+
+RouteMatch Routing::getMatch(const std::string &host, const std::string &request_path, const std::string &method)
+{
+    RouteMatch res;
+
+    res.sv = NULL;
+    res.lc = NULL;
+    res.method = false;
+
+    if (!(res.sv = findServer(host)))
+        return (res);
+
+    if (!(res.lc = findLocation(*res.sv, request_path)))
+        return (res);
+
+    res.method = isMethodAllowed(*res.lc, method);
+
+    return (res);
 }
