@@ -67,6 +67,8 @@ void    HTTPResponse::closeFile()
     {
         ::close(_file_fd);
         _file_fd = -1;
+        _file_size = 0;
+        _bytes_sent = 0;
     }
 }
 
@@ -114,4 +116,11 @@ bool    HTTPResponse::isComplete() const
     if (_file_size != _bytes_sent)
         return false;
     return true;
+}
+
+void    HTTPResponse::reset()
+{
+    _response.clear();
+    _resp_offset = 0;
+    closeFile();
 }

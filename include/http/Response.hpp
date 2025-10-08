@@ -50,8 +50,8 @@ public:
 
     // true if headers + file are fully sent
     bool isComplete() const;
-};
 
-HTTPResponse handleRequest(Routing &routing, const string &host, const string &request_path, const string &method);
+    void reset();
+};
 
 #endif
