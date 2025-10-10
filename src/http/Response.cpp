@@ -50,6 +50,7 @@ bool HTTPResponse::attachFile(const std::string& filepath) {
         return false;
 
     _file_size = f.st_size;
+    addHeader("Content-type", _getContentType(filepath));
     addHeader("Content-Length", SSTR(_file_size));
     endHeaders();
     
@@ -126,4 +127,41 @@ void    HTTPResponse::startLine(int code, const std::string &status, const std::
     _response += SSTR(code) + ' ';
     _response += status;
     _response += CRLF;
+}
+
+std::string HTTPResponse::_getContentType(const std::string &filepath)
+{
+    size_t dotPos = filepath.rfind('.');
+    if (dotPos == std::string::npos)
+        return "application/octet-stream";
+    
+    const std::string& ext = filepath.substr(dotPos);
+    
+    // Text types
+    if (ext == ".html" || ext == ".htm") return "text/html";
+    if (ext == ".css") return "text/css";
+    if (ext == ".js") return "application/javascript";
+    if (ext == ".json") return "application/json";
+    if (ext == ".xml") return "application/xml";
+    if (ext == ".txt") return "text/plain";
+    
+    // Image types
+    if (ext == ".jpg" || ext == ".jpeg") return "image/jpeg";
+    if (ext == ".png") return "image/png";
+    if (ext == ".gif") return "image/gif";
+    if (ext == ".svg") return "image/svg+xml";
+    if (ext == ".ico") return "image/x-icon";
+    if (ext == ".webp") return "image/webp";
+    
+    // Font types
+    if (ext == ".woff") return "font/woff";
+    if (ext == ".woff2") return "font/woff2";
+    if (ext == ".ttf") return "font/ttf";
+    if (ext == ".otf") return "font/otf";
+    
+    // Other
+    if (ext == ".pdf") return "application/pdf";
+    if (ext == ".zip") return "application/zip";
+    
+    return "application/octet-stream";
 }

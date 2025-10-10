@@ -30,6 +30,8 @@ class HTTPResponse
     HTTPResponse(const HTTPResponse &other);
     HTTPResponse &operator=(const HTTPResponse &other);
 
+    std::string _getContentType(const std::string &filepath);
+
 public:
     HTTPResponse();
     ~HTTPResponse();
