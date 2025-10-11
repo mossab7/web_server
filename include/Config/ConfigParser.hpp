@@ -68,7 +68,7 @@ struct ServerConfig
     size_t maxBody;             ///< Maximum allowed body size.
     string name;                ///< Server name.
     string root;                ///< Root directory.
-    vector<string> files;       ///< Default index files.
+    vector<string> indexFiles;  ///< Default index files.
     vector<Location> locations; ///< Location-specific configurations.
     map<int, string> errors;    ///< Custom error pages.
 
@@ -87,16 +87,16 @@ struct ServerConfig
 
 struct Location
 {
-    string route;           ///< Route path for this location.
-    string root;            ///< Root directory override.
-    size_t maxBody;         ///< Maximum allowed body size for this location.
-    bool autoindex;         ///< Whether directory listing is enabled.
-    string cgi;             ///< CGI script path.
-    int cgi_timeout;        ///< Timeout for CGI execution.
-    string upload;          ///< Upload directory path.
-    string redirect;        ///< Redirect URL.
-    vector<string> files;   ///< Default index files for this location.
-    vector<string> methods; ///< Allowed HTTP methods (GET, POST, DELETE).
+    string route;               ///< Route path for this location.
+    string root;                ///< Root directory override.
+    size_t maxBody;             ///< Maximum allowed body size for this location.
+    bool autoindex;             ///< Whether directory listing is enabled.
+    string cgi;                 ///< CGI script path.
+    int cgi_timeout;            ///< Timeout for CGI execution.
+    string upload;              ///< Upload directory path.
+    string redirect;            ///< Redirect URL.
+    vector<string> indexFiles;  ///< Default index files for this location.
+    vector<string> methods;     ///< Allowed HTTP methods (GET, POST, DELETE).
 
     /**
      * @brief Constructs a Location with default values from a Server.
