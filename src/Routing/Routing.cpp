@@ -81,6 +81,8 @@ void Routing::_splitCGIPath(const string &fsPath, string &scriptPath, string &pa
 
 bool Routing::_isMethodAllowed(Location &loc, const string &method)
 {
+    (void)loc;
+    (void)method;
     return (false);
 }
 
