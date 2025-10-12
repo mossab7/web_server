@@ -1,67 +1,140 @@
-#ifndef ROUTING_HPP
-#define ROUTING_HPP
+#include "Routing.hpp"
 
-#include "ConfigParser.hpp"
-#include "HTTPParser.hpp"
-#include <sys/stat.h>
-
-struct RouteMatch
+RouteMatch::RouteMatch()
+    : location(NULL),
+      isMatched(false),
+      methodAllowed(false),
+      isCGI(false),
+      isRedirect(false),
+      isDirectory(false),
+      autoIndex(false),
+      maxBodySize(0)
 {
-    Location *location;
-    bool isMatched;
-    bool methodAllowed;
+}
 
-    std::string fsPath;
-    std::string scriptPath;
-    std::string pathInfo;
-
-    bool isCGI;
-    bool isRedirect;
-    bool isDirectory;
-
-    bool autoIndex;   
-    std::string uploadDir;
-    std::string redirectUrl;
-    size_t maxBodySize;
-    std::vector<std::string> indexFiles;
-    RouteMatch();
-
-    bool isValidMatch() const;
-    bool isUploadAllowed() const;
-};
-
-class Routing
+bool RouteMatch::isValidMatch() const
 {
-private:
-    ServerConfig &_server;
+    return (isMatched && location != NULL);
+}
 
-    Location *_findLocation(const std::string &path);
-    bool _matchesRoute(const std::string &path, const std::string &route);
+bool RouteMatch::isUploadAllowed() const
+{
+    return (!uploadDir.empty());
+}
 
-    std::string _resolvePath(Location &loc, const std::string &reqPath);
-    std::string _cleanPath(const std::string &path);
-    std::string _joinPath(const std::string &base, const std::string &path);
-    std::string _getRelativePath(const std::string &path, const std::string &route);
+Routing::Routing(ServerConfig &server) : _server(server)
+{
+}
 
-    bool _isCGI(Location &loc);
-    void _splitCGIPath(const std::string &fsPath, std::string &scriptPath, std::string &pathInfo);
+Location *Routing::_findLocation(const string &path)
+{
+    (void)path;
+    return (NULL);
+}
 
-    bool _isMethodAllowed(Location &loc, const std::string &method);
+bool Routing::_matchesRoute(const string &path, const string &route)
+{
+    (void)path;
+    (void)route;
+    return (false);
+}
 
-    bool _isPathExists(const std::string &path);
-    bool _isDirectory(const std::string &path);
-    bool _isFile(const std::string &path);
+string Routing::_resolvePath(Location &loc, const string &reqPath)
+{
+    (void)loc;
+    (void)reqPath;
+    return (string());
+}
 
-    std::string _getRoot(Location &loc);
-    size_t _getMaxBodySize(Location &loc);
-    std::vector<std::string> _getIndexFiles(Location &loc);
+string Routing::_cleanPath(const string &path)
+{
+    (void)path;
+    return (string());
+}
 
-public:
-    Routing(ServerConfig &server);
+string Routing::_joinPath(const string &base, const string &path)
+{
+    (void)base;
+    (void)path;
+    return (string());
+}
 
-    RouteMatch match(const std::string &path, const std::string &method);
-    std::string getErrorPage(int code);
-    std::string getAllowedMethodsStr(Location &loc);
-};
+string Routing::_getRelativePath(const string &path, const string &route)
+{
+    (void)path;
+    (void)route;
+    return (string());
+}
 
-#endif
+bool Routing::_isCGI(Location &loc)
+{
+    (void)loc;
+    return (false);
+}
+
+void Routing::_splitCGIPath(const string &fsPath, string &scriptPath, string &pathInfo)
+{
+    (void)fsPath;
+    (void)scriptPath;
+    (void)pathInfo;
+}
+
+bool Routing::_isMethodAllowed(Location &loc, const string &method)
+{
+    return (false);
+}
+
+bool Routing::_isPathExists(const string &path)
+{
+    (void)path;
+    return (false);
+}
+
+bool Routing::_isDirectory(const string &path)
+{
+    (void)path;
+    return (false);
+}
+
+bool Routing::_isFile(const string &path)
+{
+    (void)path;
+    return (false);
+}
+
+string Routing::_getRoot(Location &loc)
+{
+    (void)loc;
+    return (string());
+}
+
+size_t Routing::_getMaxBodySize(Location &loc)
+{
+    (void)loc;
+    return size_t();
+}
+
+vector<string> Routing::_getIndexFiles(Location &loc)
+{
+    (void)loc;
+    return (vector<string>());
+}
+
+RouteMatch Routing::match(const string &path, const string &method)
+{
+    (void)path;
+    (void)method;
+    return (RouteMatch());
+}
+
+string Routing::getErrorPage(int code)
+{
+    (void)code;
+    return (string());
+}
+
+string Routing::getAllowedMethodsStr(Location &loc)
+{
+    (void)loc;
+    return (string());
+}
