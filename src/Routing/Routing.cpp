@@ -169,8 +169,10 @@ size_t Routing::_getMaxBodySize(Location &loc)
 
 vector<string> Routing::_getIndexFiles(Location &loc)
 {
-    (void)loc;
-    return (vector<string>());
+    if (!loc.indexFiles.empty())
+        return (loc.indexFiles);
+
+    return (_server.indexFiles);
 }
 
 RouteMatch Routing::match(const string &path, const string &method)
