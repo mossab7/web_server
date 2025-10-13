@@ -115,8 +115,7 @@ string Routing::_getRelativePath(const string &path, const string &route)
 
 bool Routing::_isCGI(Location &loc)
 {
-    (void)loc;
-    return (false);
+    return (!loc.cgi.empty());
 }
 
 void Routing::_splitCGIPath(const string &fsPath, string &scriptPath, string &pathInfo)
