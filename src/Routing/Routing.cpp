@@ -28,8 +28,19 @@ Routing::Routing(ServerConfig &server) : _server(server)
 
 Location *Routing::_findLocation(const string &path)
 {
-    (void)path;
-    return (NULL);
+    Location *bestMatch = NULL;
+    size_t bestLen = 0;
+
+    for (size_t i = 0; i < _server.locations.size(); ++i)
+    {
+        Location &loc = _server.locations[i];
+        if (_matchesRoute(path, loc.route) && loc.route.length() > bestLen)
+        {
+            bestMatch = &loc;
+            bestLen = loc.route.length();
+        }
+    }
+    return (bestMatch);
 }
 
 bool Routing::_matchesRoute(const string &path, const string &route)
