@@ -120,9 +120,16 @@ bool Routing::_isCGI(Location &loc)
 
 void Routing::_splitCGIPath(const string &fsPath, string &scriptPath, string &pathInfo)
 {
-    (void)fsPath;
-    (void)scriptPath;
-    (void)pathInfo;
+    std::string tmp = fsPath;
+    while (!tmp.empty() && !_isFile(tmp))
+    {
+        size_t pos = tmp.find_last_of('/');
+        if (pos == std::string::npos)
+            break;
+        tmp = tmp.substr(0, pos);
+    }
+    scriptPath = tmp;
+    pathInfo = fsPath.substr(tmp.length());
 }
 
 bool Routing::_isMethodAllowed(Location &loc, const string &method)
