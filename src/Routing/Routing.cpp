@@ -59,9 +59,10 @@ bool Routing::_matchesRoute(const string &path, const string &route)
 
 string Routing::_resolvePath(Location &loc, const string &reqPath)
 {
-    (void)loc;
-    (void)reqPath;
-    return (string());
+    std::string root = _getRoot(loc);
+    std::string relative = _getRelativePath(reqPath, loc.route);
+    std::string full = _joinPath(root, relative);
+    return (_cleanPath(full));
 }
 
 string Routing::_cleanPath(const string &path)
