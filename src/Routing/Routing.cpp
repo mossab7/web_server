@@ -124,9 +124,35 @@ vector<string> Routing::_getIndexFiles(Location &loc)
 
 RouteMatch Routing::match(const string &path, const string &method)
 {
-    (void)path;
-    (void)method;
-    return (RouteMatch());
+    RouteMatch result;
+
+    Location *loc = _findLocation(path);
+    if (!loc)
+        return (result);
+
+    result.location = loc;
+    result.isMatched = true;
+
+    result.methodAllowed = _isMethodAllowed(*loc, method);
+    if (!result.methodAllowed)
+        return (result);
+
+    result.fsPath = _resolvePath(*loc, path);
+
+    result.isCGI = _isCGI(*loc);
+    result.isRedirect = !loc->redirect.empty();
+    result.isDirectory = _isDirectory(result.fsPath);
+
+    result.autoIndex = loc->autoindex;
+    result.uploadDir = loc->upload;
+    result.redirectUrl = loc->redirect;
+    result.maxBodySize = _getMaxBodySize(*loc);
+    result.indexFiles = _getIndexFiles(*loc);
+
+    if (result.isCGI)
+        _splitCGIPath(result.fsPath, result.scriptPath, result.pathInfo);
+
+    return (result);
 }
 
 string Routing::getErrorPage(int code)
