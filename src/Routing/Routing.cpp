@@ -148,8 +148,8 @@ bool Routing::_isMethodAllowed(Location &loc, const string &method)
 
 bool Routing::_isPathExists(const string &path)
 {
-    (void)path;
-    return (false);
+    struct stat st;
+    return (stat(path.c_str(), &st) == 0);
 }
 
 bool Routing::_isDirectory(const string &path)
