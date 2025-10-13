@@ -217,8 +217,10 @@ RouteMatch Routing::match(const string &path, const string &method)
 
 string Routing::getErrorPage(int code)
 {
-    (void)code;
-    return (string());
+    if (_server.errors.find(code) != _server.errors.end())
+        return (_server.errors[code]);
+
+    return ("");
 }
 
 string Routing::getAllowedMethodsStr(Location &loc)
