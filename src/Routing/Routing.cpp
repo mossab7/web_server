@@ -26,6 +26,63 @@ Routing::Routing(ServerConfig &server) : _server(server)
 {
 }
 
+RouteMatch Routing::match(const string &path, const string &method)
+{
+    RouteMatch result;
+
+    Location *loc = _findLocation(path);
+    if (!loc)
+        return (result);
+
+    result.location = loc;
+    result.isMatched = true;
+
+    result.methodAllowed = _isMethodAllowed(*loc, method);
+    if (!result.methodAllowed)
+        return (result);
+
+    result.fsPath = _resolvePath(*loc, path);
+
+    result.isCGI = _isCGI(*loc);
+    result.isRedirect = !loc->redirect.empty();
+    result.isDirectory = _isDirectory(result.fsPath);
+
+    result.autoIndex = loc->autoindex;
+    result.uploadDir = loc->upload;
+    result.redirectUrl = loc->redirect;
+    result.maxBodySize = _getMaxBodySize(*loc);
+    result.indexFiles = _getIndexFiles(*loc);
+
+    if (result.isCGI)
+        _splitCGIPath(result.fsPath, result.scriptPath, result.pathInfo);
+
+    return (result);
+}
+
+string Routing::getErrorPage(int code)
+{
+    if (_server.errors.find(code) != _server.errors.end())
+        return (_server.errors[code]);
+
+    return ("");
+}
+
+string Routing::getAllowedMethodsStr(Location &loc)
+{
+    if (loc.methods.empty())
+        return ("GET, POST, DELETE");
+
+    std::string res;
+    for (size_t i = 0; i < loc.methods.size(); ++i)
+    {
+        res += loc.methods[i];
+        if (i < loc.methods.size() - 1)
+            res += ", ";
+    }
+
+    return (res);
+}
+
 Location *Routing::_findLocation(const string &path)
 {
     Location *bestMatch = NULL;
@@ -180,61 +237,4 @@ vector<string> Routing::_getIndexFiles(Location &loc)
         return (loc.indexFiles);
 
     return (_server.indexFiles);
-}
-
-RouteMatch Routing::match(const string &path, const string &method)
-{
-    RouteMatch result;
-
-    Location *loc = _findLocation(path);
-    if (!loc)
-        return (result);
-
-    result.location = loc;
-    result.isMatched = true;
-
-    result.methodAllowed = _isMethodAllowed(*loc, method);
-    if (!result.methodAllowed)
-        return (result);
-
-    result.fsPath = _resolvePath(*loc, path);
-
-    result.isCGI = _isCGI(*loc);
-    result.isRedirect = !loc->redirect.empty();
-    result.isDirectory = _isDirectory(result.fsPath);
-
-    result.autoIndex = loc->autoindex;
-    result.uploadDir = loc->upload;
-    result.redirectUrl = loc->redirect;
-    result.maxBodySize = _getMaxBodySize(*loc);
-    result.indexFiles = _getIndexFiles(*loc);
-
-    if (result.isCGI)
-        _splitCGIPath(result.fsPath, result.scriptPath, result.pathInfo);
-
-    return (result);
-}
-
-string Routing::getErrorPage(int code)
-{
-    if (_server.errors.find(code) != _server.errors.end())
-        return (_server.errors[code]);
-
-    return ("");
-}
-
-string Routing::getAllowedMethodsStr(Location &loc)
-{
-    if (loc.methods.empty())
-        return ("GET, POST, DELETE");
-
-    std::string res;
-    for (size_t i = 0; i < loc.methods.size(); ++i)
-    {
-        res += loc.methods[i];
-        if (i < loc.methods.size() - 1)
-            res += ", ";
-    }
-
-    return (res);
 }
