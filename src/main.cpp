@@ -17,8 +17,6 @@
 #include "EventLoop.hpp"
 #include "Server.hpp"
 
-#include "/home/samir/Desktop/web_server/include/Routing/Routing.hpp"
-
 std::string intToString(int value);
 
 // External shutdown flag (defined in main.cpp)
@@ -98,7 +96,7 @@ int main(int ac, char **av)
 
         if (result.isValidMatch())
         {
-            cout << "Filesystem path: " << result.fsPath << "\n";
+            cout << "\n\nFilesystem path: " << result.fsPath << "\n";
             cout << "Script path: " << result.scriptPath << "\n";
             cout << "PATH_INFO: " << result.pathInfo << "\n";
             cout << "Is CGI: " << result.isCGI << "\n";
@@ -114,46 +112,46 @@ int main(int ac, char **av)
                 cout << result.indexFiles[i]  << " ";
             cout << "\n";
 
-            cout << "Allowed methods: " << router.getAllowedMethodsStr(*result.location) << "\n";
+            cout << "Allowed methods: " << router.getAllowedMethodsStr(*result.location) << "\n\n\n" << endl;
         }
         else
-            cout << "No matching location found or method not allowed.\n";
+            cout << "No matching location found or method not allowed.\n\n\n" << endl;
 
         // Store server pointers for proper lifetime management
-        // std::vector<Server *> serverInstances;
+        std::vector<Server *> serverInstances;
 
-        // for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); ++it)
-        // {
-        //     Server *server = new Server(*it, eventLoop.fd_manager);
-        //     serverInstances.push_back(server);
-        //     eventLoop.fd_manager.add(server->get_fd(), server, EPOLLIN);
-        //     logger.info("Configured server: " + it->name + " on " + it->host + ":" + intToString(it->port));
-        // }
-        // logger.info("Starting webserver...");
+        for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); ++it)
+        {
+            Server *server = new Server(*it, eventLoop.fd_manager);
+            serverInstances.push_back(server);
+            eventLoop.fd_manager.add(server->get_fd(), server, EPOLLIN);
+            logger.info("Configured server: " + it->name + " on " + it->host + ":" + intToString(it->port));
+        }
+        logger.info("Starting webserver...");
 
-        // // Setup signal handlers for graceful shutdown
-        // setup_signal_handlers();
-        // logger.info("Signal handlers configured");
+        // Setup signal handlers for graceful shutdown
+        setup_signal_handlers();
+        logger.info("Signal handlers configured");
 
-        // // Print startup message
-        // std::cout << "=== Webserver Starting ===" << std::endl;
-        // std::cout << "Press Ctrl+C to stop the server gracefully" << std::endl;
-        // std::cout << "Listening for connections..." << std::endl;
+        // Print startup message
+        std::cout << "=== Webserver Starting ===" << std::endl;
+        std::cout << "Press Ctrl+C to stop the server gracefully" << std::endl;
+        std::cout << "Listening for connections..." << std::endl;
 
-        // // Start the event loop
-        // logger.info("Starting event loop");
-        // eventLoop.run();
+        // Start the event loop
+        logger.info("Starting event loop");
+        eventLoop.run();
 
-        // // Cleanup servers after event loop exits
-        // logger.info("Cleaning up servers...");
-        // for (std::vector<Server *>::iterator it = serverInstances.begin(); it != serverInstances.end(); ++it)
-        // {
-        //     eventLoop.fd_manager.remove((*it)->get_fd());
-        //     delete *it;
-        // }
+        // Cleanup servers after event loop exits
+        logger.info("Cleaning up servers...");
+        for (std::vector<Server *>::iterator it = serverInstances.begin(); it != serverInstances.end(); ++it)
+        {
+            eventLoop.fd_manager.remove((*it)->get_fd());
+            delete *it;
+        }
 
-        // // This point should not be reached unless event_loop exits
-        // logger.info("Event loop exited");
+        // This point should not be reached unless event_loop exits
+        logger.info("Event loop exited");
     }
     catch (const std::exception &e)
     {
