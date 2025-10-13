@@ -36,10 +36,10 @@ void    RequestHandler::processRequest()
     _response.startLine();
     _response.addHeader("Server", "WebServ/1.0");
     _response.addHeader("Connection", _keepAlive ? "keep-alive" : "close");
-    _response.addHeader("content-length", "4");
+    _response.addHeader("content-length", "18");
     _response.addHeader("content-type", "text/html");
     _response.endHeaders();
-    _response.setBody("todo");
+    _response.setBody("Hello From Webserv");
     // RouteMatch match = _router.getMatch(_request.getUri(), _request.getMethod());
     // std::string path;
     // if (match.lc)
