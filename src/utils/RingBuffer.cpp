@@ -21,7 +21,7 @@ void RingBuffer::clear()
     _size = 0;
 }
 
-size_t RingBuffer::write(char *buff, size_t size)
+size_t RingBuffer::write(const char *buff, size_t size)
 {
     if (!size) return 0;
 

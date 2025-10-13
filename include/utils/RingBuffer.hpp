@@ -15,7 +15,7 @@ class RingBuffer
 public:
     explicit RingBuffer(size_t size);
 
-    size_t  write(char* buff, size_t size); // write to buffer, returns bytes written
+    size_t  write(const char* buff, size_t size); // write to buffer, returns bytes written
     size_t  read(char* buff, size_t size);  // read from _buff to buff, returns bytes read
     size_t  peek(char* buff, size_t size);  // read without advancing the pointers
 
