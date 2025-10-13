@@ -225,6 +225,16 @@ string Routing::getErrorPage(int code)
 
 string Routing::getAllowedMethodsStr(Location &loc)
 {
-    (void)loc;
-    return (string());
+    if (loc.methods.empty())
+        return ("GET, POST, DELETE");
+
+    std::string res;
+    for (size_t i = 0; i < loc.methods.size(); ++i)
+    {
+        res += loc.methods[i];
+        if (i < loc.methods.size() - 1)
+            res += ", ";
+    }
+
+    return (res);
 }
