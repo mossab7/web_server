@@ -19,7 +19,7 @@ void    HTTPResponse::addHeader(const std::string& k, const std::string& v)
 }
 void    HTTPResponse::endHeaders()
 {
-    _response.write(CRLF, sizeof(CRLF));
+    _response.write(CRLF, 2);
 }
 
 void    HTTPResponse::setBody(const std::string& data)
