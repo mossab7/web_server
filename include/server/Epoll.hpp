@@ -7,14 +7,15 @@
 #include <vector>
 #include "Socket.hpp"
 
-#define READ_EVENT(event) ((event) & EPOLLIN)
-#define WRITE_EVENT(event) ((event) & EPOLLOUT)
-#define ERROR_EVENT(event) ((event) & (EPOLLERR | EPOLLHUP))
+#define IS_READ_EVENT(event) ((event) & EPOLLIN)
+#define IS_WRITE_EVENT(event) ((event) & EPOLLOUT)
+#define IS_ERROR_EVENT(event) ((event) & (EPOLLERR | EPOLLHUP))
 #define EDGE_TRIGGERED_EVENT(event) ((event) & EPOLLET)
 #define ONE_SHOT_EVENT(event) ((event) & EPOLLONESHOT)
 #define PRIORITY_EVENT(event) ((event) & EPOLLPRI)
-#define READ_WRITE_EVENT (EPOLLIN | EPOLLOUT)
-#define READ_WRITE_ERROR_EVENT (EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLHUP)
+#define READ_WRITE_EVENT (EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLHUP)
+#define READ_EVENT (EPOLLIN | EPOLLERR | EPOLLHUP)
+#define WRITE_EVENT (EPOLLOUT | EPOLLERR | EPOLLHUP)
 
 #define MAX_EVENTS 1024
 

@@ -26,13 +26,13 @@ This document describes the best practices implemented in the event-driven web s
 events = epoll.wait(1000);  // 1 second timeout
 
 // 2. Error events processed first
-if (ERROR_EVENT(events[i].events)) {
+if (IS_ERROR_EVENT(events[i].events)) {
     handler->onError();
     continue;  // Skip other events
 }
 
 // 3. Validate handler after each event
-if (fd_manager.exists(events[i].data.fd) && WRITE_EVENT(...))
+if (fd_manager.exists(events[i].data.fd) && IS_WRITE_EVENT(...))
 ```
 
 ### 2. Server (src/server/Server.cpp)

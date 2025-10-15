@@ -28,34 +28,21 @@ void EventLoop::run()
                     logger.warning("Event for unknown fd: " + SSTR(events[i].data.fd));
                     continue;
                 }
-                
-                // Handle error events first
-                if (ERROR_EVENT(events[i].events)) {
-                    handler->onError();
-                    continue; // Don't process other events after error
-                }
-                
-                // Handle read events
-                if (READ_EVENT(events[i].events)) {
-                    handler->onReadable();
-                }
-                
-                // Check if handler still exists (might have been deleted in onReadable)
-                if (fd_manager.exists(events[i].data.fd) && WRITE_EVENT(events[i].events)) {
-                    handler->onWritable();
-                }
+                handler->onEvent(events[i].events);
             }
             catch (const std::exception &e) 
             {
                 logger.error("Exception in event loop: " + std::string(e.what()));
                 // Try to cleanup the problematic handler
                 try {
-                    EventHandler* handler = fd_manager.getOwner(events[i].data.fd);
-                    if (handler) {
-                        fd_manager.remove(events[i].data.fd);
-                        delete handler;
+                        EventHandler* handler = fd_manager.getOwner(events[i].data.fd);
+                        if (handler) {
+                            fd_manager.remove(events[i].data.fd);
+                            delete handler;
                     }
-                } catch (...) {
+                } 
+                catch (...) 
+                {
                     logger.error("Failed to cleanup handler after exception");
                 }
             }

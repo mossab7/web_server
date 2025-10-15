@@ -32,12 +32,23 @@ Server::Server(ServerConfig &config, FdManager &fdm)
 
 Server::~Server()
 {
-    _socket.close();
 }
 
 int Server::get_fd() const
 {
     return _socket.get_fd();
+}
+
+void Server::onEvent(uint32_t events)
+{
+    if (IS_ERROR_EVENT(events)) {
+        onError();
+        return;
+    }
+    if (IS_READ_EVENT(events))
+        onReadable();
+    if (IS_WRITE_EVENT(events)) 
+        onWritable();
 }
 
 void Server::onReadable()
@@ -54,7 +65,7 @@ void Server::onReadable()
         Client* client = new Client(client_socket, _config, _fd_manager);
         
         // Register client with epoll for reading (Level-Triggered)
-        _fd_manager.add(client->get_fd(), client, EPOLLIN);
+        _fd_manager.add(client->get_fd(), client, READ_EVENT);
         
     } catch (const std::exception& e) {
         logger.error("Failed to accept client connection: " + std::string(e.what()));

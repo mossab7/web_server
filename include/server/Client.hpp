@@ -55,6 +55,7 @@ public:
 
     // EventHandler interface
     int get_fd() const;
+    void onEvent(uint32_t events);
     void onReadable();
     void onWritable();
     void onError();

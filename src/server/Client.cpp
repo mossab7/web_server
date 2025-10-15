@@ -24,10 +24,24 @@ Client::~Client()
 
 int Client::get_fd() const { return _socket.get_fd(); }
 
+
+
+/*--------------------------------------------------------*/
+void Client::onEvent(uint32_t events)
+{
+    if (IS_ERROR_EVENT(events)) {
+        onError();
+        return;
+    }
+    if (IS_READ_EVENT(events))
+        onReadable();
+    if (IS_WRITE_EVENT(events))
+        onWritable();
+}
+
 void    Client::onError()
 {
     logger.error("Error event on client fd: " + _strFD);
-    _socket.close();
     _fd_manager.remove(get_fd());
 }
 void    Client::onReadable()
@@ -58,6 +72,7 @@ void    Client::onWritable()
     default: break;
     }
 }
+/*--------------------------------------------------------*/
 
 bool Client::_readData()
 {
@@ -143,7 +158,7 @@ void    Client::reset()
 {
     _handler.reset();
     _state = ST_READING;
-    _fd_manager.modify(this, EPOLLIN);
+    _fd_manager.modify(this, READ_EVENT);
 }
 
 void    Client::_processError()
@@ -163,7 +178,7 @@ void Client::_processRequest()
     _keepAlive = _shouldKeepAlive();
     _handler.processRequest();
     _state = ST_SENDING;
-    _fd_manager.modify(this, EPOLLOUT);
+    _fd_manager.modify(this, WRITE_EVENT);
 }
 
 bool    Client::_shouldKeepAlive()
