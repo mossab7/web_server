@@ -25,8 +25,8 @@ int Pipe::write_fd() const
 
 void Pipe::close()
 {
-    ::close(fd[0]);
-    ::close(fd[1]);
+    closeRead();
+    closeWrite();
 }
 
 
@@ -52,12 +52,14 @@ int Pipe::write(const char *data, size_t size)
 
 void Pipe::closeRead()
 {
-    ::close(fd[0]);
+    if (fd[0] != -1)
+        ::close(fd[0]);
 }
 
 void Pipe::closeWrite()
 {
-    ::close(fd[1]);
+    if (fd[1] != -1)
+        ::close(fd[1]);
 }
 
 

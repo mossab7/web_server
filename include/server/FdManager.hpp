@@ -33,6 +33,15 @@ public:
             fd_map.erase(it);
         }
     }
+    void detachFd(int fd)
+    {
+        std::map<int, EventHandler*>::iterator it = fd_map.find(fd);
+        if (it != fd_map.end()) 
+        {
+            _epoll.remove_fd(fd);
+            fd_map.erase(it);
+        }
+    }
     EventHandler* getOwner(int fd) 
     {
         std::map<int, EventHandler*>::iterator it = fd_map.find(fd);

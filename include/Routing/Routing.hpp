@@ -18,6 +18,8 @@ struct RouteMatch
     bool isCGI;
     bool isRedirect;
     bool isDirectory;
+    bool isFile;
+    bool doesExist;
 
     bool autoIndex;   
     std::string uploadDir;

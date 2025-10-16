@@ -46,6 +46,8 @@ RouteMatch Routing::match(const string &path, const string &method)
     result.isCGI = _isCGI(*loc);
     result.isRedirect = !loc->redirect.empty();
     result.isDirectory = _isDirectory(result.fsPath);
+    result.isFile = _isFile(result.fsPath);
+    result.doesExist = _isPathExists(result.fsPath);
 
     result.autoIndex = loc->autoindex;
     result.uploadDir = loc->upload;
