@@ -14,7 +14,7 @@
 #include "Pipe.hpp"
 #include "HTTPParser.hpp"
 #include "Epoll.hpp"
-#include "Response.hpp"
+#include "RequestHandler.hpp"
 #include "FdManager.hpp"
 
 #define BUFFER_SIZE 4096
@@ -29,7 +29,7 @@ class CGIHandler : public EventHandler
         Pipe _outputPipe;
         pid_t _pid;
         HTTPParser &_parser;
-        HTTPResponse _response;
+        RequestHandler _requestHandler;
         bool _isRunning;
         const char *_bodyBuffer;
 
@@ -43,6 +43,7 @@ class CGIHandler : public EventHandler
         ~CGIHandler() {}
         int get_fd();
         void start();
+        void onEvent(uint32_t events);
         void onReadable();
         void onWritable();
         void onError();
@@ -50,64 +51,52 @@ class CGIHandler : public EventHandler
         void kill();
 };
 
+void CGIHandler::onEvent(uint32_t events)
+{
+    if (IS_ERROR_EVENT(events))
+    {
+        onError();
+        return;
+    }
+    if (IS_READ_EVENT(events))
+        onReadable();
+    if (IS_WRITE_EVENT(events))
+        onWritable();
+}
 
 void CGIHandler::onReadable()
 {
     char buffer[BUFFER_SIZE];
-    int bytesRead = _outputPipe.read(buffer, BUFFER_SIZE);
-    if (bytesRead > 0)
+    ssize_t bytesRead = _outputPipe.read(buffer, BUFFER_SIZE);
+    if (bytesRead < 0)
     {
-        buffer[bytesRead] = '\0';
-        _parser.addChunk(buffer, bytesRead);
+        // Handle read error
+        onError();
+        return;
     }
     else if (bytesRead == 0)
     {
-        // EOF
-        _outputPipe.closeRead();
+        // EOF, CGI process has finished output
+        _fd_manager.detachFd(_outputPipe.read_fd());
         _isRunning = false;
-        // Prepare response
+        return;
     }
     else
     {
-        // Error
-        onError();
+        // Process the read data (e.g., append to response body)
+        _requestHandler.feed(buffer, bytesRead);
     }
+    
 }
 
 void CGIHandler::onWritable()
 {
-    _bodyBuffer = _parser.getBody();
-    size_t bodySize = _parser.getBodySize();
-    if (_bodyBuffer && bodySize > 0)
-    {
-        int bytesWritten = _inputPipe.write(_bodyBuffer, bodySize);
-        if (bytesWritten > 0)
-        {
-            _bodyBuffer += bytesWritten;
-            if (*_bodyBuffer == '\0')
-            {
-                _inputPipe.closeWrite();
-            }
-        }
-        else if (bytesWritten < 0)
-        {
-            // Error
-            onError();
-        }
-    }
-    else
-    {
-        _inputPipe.closeWrite();
-    }
+    //todo write to cgi stdin from request body if any
 }
 
 void CGIHandler::onError()
 {
-    if (_isRunning)
-        kill();
-    _inputPipe.close();
-    _outputPipe.close();
-    _isRunning = false;
+    // design better error handling
 }
 
 std::map <std::string, std::string> initInterpreterMap()
@@ -315,6 +304,8 @@ CGIHandler::~CGIHandler()
     for (size_t i = 0; i < _env.size() - 1; ++i)
         delete[] _env[i];
     _env.clear();
+    _fd_manager.detachFd(_outputPipe.read_fd());
+    _fd_manager.detachFd(_inputPipe.write_fd());
 }
 
 void CGIHandler::start()
