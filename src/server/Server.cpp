@@ -85,7 +85,5 @@ void Server::onError()
     Logger logger;
     logger.error("Error on server socket fd: " + SSTR(get_fd()));
     
-    // Close socket and remove from epoll
-    _socket.close();
     _fd_manager.remove(get_fd());
 }
