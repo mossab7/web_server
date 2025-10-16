@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <stdexcept>
 
+#include "RingBuffer.hpp"
+
 #define CRLF        "\r\n"
 #define BUFF_SIZE   8192    // 8kb
 #define NPOS        std::string::npos
@@ -63,7 +65,7 @@ class HTTPParser
     strmap      _headers;
 
     // the requst body (default for now)
-    std::string _body;
+    RingBuffer  _body;
     size_t      _contentLength;
     size_t      _bytesRead;
 
@@ -119,8 +121,7 @@ public:
     bool            isComplete();
     bool            isError();
 
-    const char* getBody(void);
-    size_t      getBodySize(void);
+    RingBuffer getBody(void);
 
     void    reset();  // To reuse object for keep-alive connections
 
