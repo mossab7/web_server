@@ -85,13 +85,17 @@ void CGIHandler::onReadable()
     {
         // Process the read data (e.g., append to response body)
         _requestHandler.feed(buffer, bytesRead);
+        //todo write to the toWrite buffer
     }
     
 }
 
 void CGIHandler::onWritable()
 {
-    //todo write to cgi stdin from request body if any
+    size_t size = _parser.getBody().getSize();
+    char buffer[size + 1];
+    _parser.getBody().read(buffer, size);
+    _inputPipe.write(buffer, size);
 }
 
 void CGIHandler::onError()
