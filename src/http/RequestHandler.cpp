@@ -86,6 +86,7 @@ void    RequestHandler::_handleGET(const RouteMatch& match)
             std::string redirectUri = uri + '/';
             _response.startLine(301);
             _response.addHeader("location", redirectUri);
+            _response.addHeader("content-length", "0");
             _response.endHeaders();
             return;
         }
