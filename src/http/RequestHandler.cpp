@@ -112,12 +112,30 @@ void    RequestHandler::_handlePOST(const RouteMatch& match)
 }
 void    RequestHandler::_handleDELETE(const RouteMatch& match)
 {
-    _common(match);
     // 1. Check if path exists (404 if not)
     // 2. Check if it's a file (403 if directory)
     // 3. Check permissions
     // 4. Delete the file with unlink()
     // 5. Return 204 No Content or 200 OK
+    if (!match.doesExist)
+    {
+        _sendErrorResponse(404);
+        return;
+    }
+    if (match.isDirectory)
+    {
+        _sendErrorResponse(403);
+        return;
+    }
+    if (unlink(match.fsPath.c_str()) == 0)
+    {
+        logger.success("file wad deleted: " + match.fsPath);
+        _response.startLine(204);
+        _response.endHeaders();
+        return;
+    }
+    else
+        _sendErrorResponse(403);
 }
 
 void    RequestHandler::_sendErrorResponse(int code)
