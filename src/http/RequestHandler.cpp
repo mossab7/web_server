@@ -4,7 +4,7 @@ RequestHandler::RequestHandler(ServerConfig &config, HTTPParser& req, HTTPRespon
     _router(config),
     _request(req),
     _response(resp),
-    _cgi()
+    _cgi(_request,config,fdManager)
 {}
 RequestHandler::~RequestHandler() { reset(); }
 
@@ -16,12 +16,13 @@ bool    RequestHandler::isError() { return _request.isError(); }
 
 size_t  RequestHandler::readNextChunk(char *buff, size_t size)
 {
-	if (isCgi() && match.location->cgiTimeout > difftime(cgiStartTime,time(NULL)))
+	const RouteMatch& match = _router.match(_request.getUri(), _request.getMethod());
+	if (_isCGI && match.location->cgi_timeout > difftime(_cgiSrtartTime,time(NULL)))
 	{
-		cgiHandler.end();
+		_cgi.end();
 		return (-1);
 	}
-	cgiStartTime = time(NULL);
+	_cgiSrtartTime = time(NULL);
 	return _response.readNextChunk(buff, size);
 }
 

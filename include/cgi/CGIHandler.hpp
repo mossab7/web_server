@@ -35,24 +35,22 @@ class CGIHandler : public EventHandler
 		HTTPParser _cgiParser;
 		HTTPResponse &_response;
         bool _isRunning;
-        const char *_bodyBuffer;
+		bool  _needBody;
 
-        CGIHandler(const CGIHandler &other);
-        CGIHandler &operator=(const CGIHandler &other);
         void push_interpreter_if_needed();
         void initEnv(HTTPParser &parser);
         void initArgv();
     public:
-        CGIHandler(const RouteMatch& info, HTTPParser &parser, ServerConfig &config, FdManager &fdm);
+        CGIHandler(HTTPParser &parser, ServerConfig &config, FdManager &fdm);
         ~CGIHandler() {}
         int get_fd();
-        void start(const RouteMatch& match);
+        void start(const RouteMatch& match, bool needBody);
         void onEvent(uint32_t events);
         void onReadable();
         void onWritable();
         void onError();
         bool isRunning() const;
-        void kill();
+        void end();
 };
 
 void CGIHandler::onEvent(uint32_t events)
@@ -302,8 +300,8 @@ void CGIHandler::initEnv(HTTPParser &parser)
     _env.push_back(NULL); // Null-terminate for execve
 }
 
-CGIHandler::CGIHandler(const std::string &scriptPath, HTTPParser &parser, ServerConfig &config, FdManager &fdm)
-    : _scriptPath(scriptPath), _pid(-1), _isRunning(false) , _parser(parser), EventHandler(config, fdm)
+CGIHandler::CGIHandler(HTTPParser &parser, ServerConfig &config, FdManager &fdm)
+    :_pid(-1), _isRunning(false) , _Reqparser(parser), EventHandler(config, fdm)
 {
 }
 
@@ -319,14 +317,15 @@ CGIHandler::~CGIHandler()
     _fd_manager.detachFd(_inputPipe.write_fd());
 }
 
-void CGIHandler::start(const RouteMatch& match)
+void CGIHandler::start(const RouteMatch& match, bool needBody)
 {
     if (_isRunning)
         return;
+	_needBody = needBody;
     try
     {
         initArgv();
-        initEnv(_reqParser);
+        initEnv(_Reqparser);
     }
     catch (const std::exception &e)
     {
@@ -341,7 +340,8 @@ void CGIHandler::start(const RouteMatch& match)
     {
         // Child process
         dup2(_inputPipe.read_fd(), STDIN_FILENO);
-        dup2(_outputPipe.write_fd(), STDOUT_FILENO);
+		if (_needBody)
+        	dup2(_outputPipe.write_fd(), STDOUT_FILENO);
 
         _inputPipe.close();
         _outputPipe.close();
@@ -357,9 +357,12 @@ void CGIHandler::start(const RouteMatch& match)
     else
     {
         // Parent process
-        _outputPipe.set_non_blocking();
+		if (_needBody)
+		{
+        	_outputPipe.set_non_blocking();
+			_fd_manager.add(_outputPipe.read_fd(), this, EPOLLIN);
+		}
         _inputPipe.set_non_blocking();
-        _fd_manager.add(_outputPipe.read_fd(), this, EPOLLIN);
         _fd_manager.add(_inputPipe.write_fd(), this, EPOLLOUT);
         _inputPipe.closeRead();
         _outputPipe.closeWrite();
@@ -373,7 +376,7 @@ bool CGIHandler::isRunning() const
 }
 
 
-void CGIHandler::kill()
+void CGIHandler::end()
 {
     if (!_isRunning)
         return;
@@ -383,7 +386,6 @@ void CGIHandler::kill()
     waitpid(_pid, &status, 0);
     _isRunning = false;
 
-    // Cleanup allocated environment strings
     for (size_t i = 0; i < _env.size() - 1; ++i)
         delete[] _env[i];
     _env.clear();

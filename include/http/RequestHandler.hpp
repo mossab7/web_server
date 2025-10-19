@@ -22,7 +22,7 @@ class RequestHandler
     HTTPResponse    &_response;
 
     CGIHandler      _cgi;
-	time_t			_cgiSrtartTime
+	time_t			_cgiSrtartTime;
 
     bool            _keepAlive;
     bool            _isCGI;
