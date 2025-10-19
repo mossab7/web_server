@@ -14,7 +14,16 @@ bool    RequestHandler::isReqComplete() { return _request.isComplete(); }
 bool    RequestHandler::isResComplete() { return _response.isComplete(); }
 bool    RequestHandler::isError() { return _request.isError(); }
 
-size_t  RequestHandler::readNextChunk(char *buff, size_t size) { return _response.readNextChunk(buff, size); }
+size_t  RequestHandler::readNextChunk(char *buff, size_t size)
+{
+	if (isCgi() && match.location->cgiTimeout > difftime(cgiStartTime,time(NULL)))
+	{
+		cgiHandler.end();
+		return (-1);
+	}
+	cgiStartTime = time(NULL);
+	return _response.readNextChunk(buff, size);
+}
 
 void    RequestHandler::reset()
 {
@@ -36,7 +45,7 @@ bool    RequestHandler::keepAlive()
 void    RequestHandler::processRequest()
 {
     _keepAlive = keepAlive();
-    
+
     const RouteMatch& match = _router.match(_request.getUri(), _request.getMethod());
     if (!match.isValidMatch())
     {
@@ -226,7 +235,7 @@ std::string RequestHandler::_getDictListing(const std::string& path)
 
     // this will be used to store entries data
     std::vector<fileInfo> entries;
-    
+
     // collect entries
     dirent *entry = NULL;
     while ((entry = readdir(dir)))
@@ -277,8 +286,8 @@ std::string RequestHandler::_getDictListing(const std::string& path)
         }
 
         html += "<tr>\n";
-        html += "<td><a href=\"" + link + "\" class=\"" + 
-            (isDir ? "dir" : "file") + "\">" + entries[i].name + 
+        html += "<td><a href=\"" + link + "\" class=\"" +
+            (isDir ? "dir" : "file") + "\">" + entries[i].name +
             (isDir ? "/" : "") + "</a></td>\n";
         html += "<td class=\"size\">" + sizeStr + "</td>\n";
         html += "<td class=\"date\">" + dateStr + "</td>\n";
@@ -295,5 +304,6 @@ void    RequestHandler::_handleCGI(const RouteMatch& match)
 {
     // idk pas the response to fill it or smth
     // run the script, see RouteMatch for more info.. etc
-    _cgi.spawn();
+	cgiStartTime = time(NULL);
+    _cgi.start();
 }

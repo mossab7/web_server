@@ -14,7 +14,6 @@ class EventHandler
     public:
         EventHandler(ServerConfig &config ,FdManager &fdm);
         virtual ~EventHandler() {}
-        virtual int get_fd() const = 0;
         virtual void onEvent(uint32_t events) = 0;
         virtual void onReadable() {};
         virtual void onWritable() {};

@@ -16,12 +16,13 @@
 class RequestHandler
 {
     Logger  logger;
-    
+
     Routing         _router;
     HTTPParser      &_request;
     HTTPResponse    &_response;
 
     CGIHandler      _cgi;
+	time_t			_cgiSrtartTime
 
     bool            _keepAlive;
     bool            _isCGI;
@@ -55,7 +56,7 @@ class RequestHandler
             return name < other.name;
         }
     };
-    
+
 public:
     RequestHandler(ServerConfig &config, HTTPParser& req, HTTPResponse& resp, FdManager &fdManager);
     ~RequestHandler();

@@ -17,8 +17,10 @@
 #include "RequestHandler.hpp"
 #include "FdManager.hpp"
 #include "Routing.hpp"
+#include <ctype.h>
 
 #define BUFFER_SIZE 4096
+
 
 class CGIHandler : public EventHandler
 {
@@ -29,7 +31,9 @@ class CGIHandler : public EventHandler
         Pipe _inputPipe;
         Pipe _outputPipe;
         pid_t _pid;
-        HTTPParser &_parser;
+        HTTPParser &_Reqparser;
+		HTTPParser _cgiParser;
+		HTTPResponse &_response;
         bool _isRunning;
         const char *_bodyBuffer;
 
@@ -42,7 +46,7 @@ class CGIHandler : public EventHandler
         CGIHandler(const RouteMatch& info, HTTPParser &parser, ServerConfig &config, FdManager &fdm);
         ~CGIHandler() {}
         int get_fd();
-        void start();
+        void start(const RouteMatch& match);
         void onEvent(uint32_t events);
         void onReadable();
         void onWritable();
@@ -84,17 +88,20 @@ void CGIHandler::onReadable()
     else
     {
         // Process the read data (e.g., append to response body)
-        _requestHandler.feed(buffer, bytesRead);
+        _cgiParser.addChunk(buffer, bytesRead);
+		if (_cgiParser.isError())
+			//handle error
+		_response.feed(buffer, bytesRead);
         //todo write to the toWrite buffer
     }
-    
+
 }
 
 void CGIHandler::onWritable()
 {
-    size_t size = _parser.getBody().getSize();
+    size_t size = _Reqparser.getBody().getCapacity() - _Reqparser.getBody().getSize();
     char buffer[size + 1];
-    _parser.getBody().read(buffer, size);
+    _Reqparser.getBody().read(buffer, size);
     _inputPipe.write(buffer, size);
 }
 
@@ -203,7 +210,7 @@ void CGIHandler::push_interpreter_if_needed()
     std::string interpreter;
     std::string extension;
     std::map <std::string, std::string> interpreterMap;
-    
+
     if (access(_scriptPath.c_str(), X_OK) != 0)
         return ; // not runnable at all
 
@@ -225,7 +232,7 @@ void CGIHandler::push_interpreter_if_needed()
         interpreter.clear();
         return ;
     }
-    
+
     size_t dotPos = _scriptPath.rfind('.');
     if (dotPos != std::string::npos)
     {
@@ -244,7 +251,7 @@ void CGIHandler::push_interpreter_if_needed()
 
 void CGIHandler::initArgv()
 {
-    //implement look up for interpreter if needed 
+    //implement look up for interpreter if needed
     _argv.clear();
     try
     {
@@ -254,7 +261,7 @@ void CGIHandler::initArgv()
     {
         throw;
     }
-    
+
     _argv.push_back(const_cast<char *>(_scriptPath.c_str()));
     _argv.push_back(NULL); // Null-terminate for execve
 }
@@ -312,16 +319,16 @@ CGIHandler::~CGIHandler()
     _fd_manager.detachFd(_inputPipe.write_fd());
 }
 
-void CGIHandler::start()
+void CGIHandler::start(const RouteMatch& match)
 {
     if (_isRunning)
         return;
-    try 
+    try
     {
         initArgv();
-        initEnv(_parser);
-    } 
-    catch (const std::exception &e) 
+        initEnv(_reqParser);
+    }
+    catch (const std::exception &e)
     {
         throw std::runtime_error("Failed to initialize CGI: " + std::string(e.what()));
     }
