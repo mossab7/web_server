@@ -13,6 +13,7 @@ struct RouteMatch
 
     std::string fsPath;
     std::string scriptPath;
+    std::string scriptInterpreter;
     std::string pathInfo;
 
     bool isCGI;
@@ -21,7 +22,7 @@ struct RouteMatch
     bool isFile;
     bool doesExist;
 
-    bool autoIndex;   
+    bool autoIndex;
     std::string uploadDir;
     std::string redirectUrl;
     size_t maxBodySize;

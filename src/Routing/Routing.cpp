@@ -56,7 +56,10 @@ RouteMatch Routing::match(const string &path, const string &method)
     result.indexFiles = _getIndexFiles(*loc);
 
     if (result.isCGI)
+    {
         _splitCGIPath(result.fsPath, result.scriptPath, result.pathInfo);
+        result.scriptInterpreter = loc->scriptInterpreter;
+    }
 
     return (result);
 }
