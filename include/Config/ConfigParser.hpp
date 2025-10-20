@@ -103,6 +103,7 @@ struct Location
     string redirect;           ///< Redirect URL.
     vector<string> indexFiles; ///< Default index files for this location.
     vector<string> methods;    ///< Allowed HTTP methods (GET, POST, DELETE).
+    string scriptInterpreter;  ///< Path to the interpreter used for executing script files (e.g. /usr/bin/python3).
 
     /**
      * @brief Constructs a Location with default values from a Server.
