@@ -17,22 +17,28 @@ bool    RequestHandler::isError() { return _request.isError(); }
 
 size_t  RequestHandler::readNextChunk(char *buff, size_t size)
 {
-	const RouteMatch& match = _router.match(_request.getUri(), _request.getMethod());
-	if (_isCGI && match.location->cgi_timeout > difftime(_cgiSrtartTime,time(NULL)))
+    if (!responseStarted)
+        responseStarted = true;
+    const RouteMatch& match = _router.match(_request.getUri(), _request.getMethod());
+	if (_isCGI && match.location->cgi_timeout <= difftime(_cgiSrtartTime,time(NULL)))
 	{
-		_cgi.end();
+        _cgi.end();
+        logger.error("CGI timeout reached for script: " + match.scriptPath);
         if (responseStarted == false)
-        {
-            logger.error("CGI timeout reached for script: " + match.scriptPath);
             _sendErrorResponse(504);
-        }
-		return (-1);
+        else 
+		    return (-1);
 	}
     if (_isCGI)
 	    _cgiSrtartTime = time(NULL);
     if (_isCGI && _cgi.getStatus() != 0)
-        _sendErrorResponse(_cgi.getStatus());
-	return _response.readNextChunk(buff, size);
+    {
+        if (responseStarted == false)
+            _sendErrorResponse(_cgi.getStatus());
+        else 
+            return (-1);
+    }
+    return _response.readNextChunk(buff, size);
 }
 
 void    RequestHandler::reset()

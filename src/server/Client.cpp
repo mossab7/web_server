@@ -63,7 +63,7 @@ void    Client::onWritable()
     _sendData();
     switch (_state)
     {
-    case ST_SENDING     : _handler.responseStarted = true;  break;
+    case ST_SENDING     : break;
     case ST_ERROR       : _processError(); break;
     case ST_SENDCOMPLETE:
         if (_keepAlive) reset();
