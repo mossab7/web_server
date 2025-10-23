@@ -3,8 +3,8 @@
 Simple CGI test script that returns a basic HTML page
 """
 
-print("Content-Type: text/html")
-print()  # Empty line to separate headers from body
+print("Content-Type: text/html", end="\r\n")
+print(end="\r\n")  # Empty line to separate headers from body
 print("<!DOCTYPE html>")
 print("<html>")
 print("<head><title>Hello from Python CGI</title></head>")

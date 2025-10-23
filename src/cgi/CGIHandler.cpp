@@ -32,102 +32,106 @@ void CGIHandler::onReadable()
 	ssize_t bytesRead = _outputPipe.read(buffer, BUFFER_SIZE);
 
 	logger.debug("CGI read " + intToString(bytesRead) + " bytes");
-	logger.debug(buffer);
 
 	if (bytesRead < 0)
 	{
-		// Handle read error
-		logger.debug("CGIHandler::onReadable() - read error");
 		logger.error("CGI read error");
 		onError();
 		return;
 	}
-	else if (bytesRead == 0)
+	
+	if (bytesRead == 0)
 	{
 		logger.debug("CGIHandler::onReadable() - EOF reached");
-		// EOF, CGI process has finished output
 		_fd_manager.detachFd(_outputPipe.read_fd());
 		_outputPipe.closeRead();
 
-		// Check if CGI parser is complete and valid
-		if (!_cgiParser.isComplete() && _cgiParser.getState() != HEADERS)
+		// Check if CGI output was valid
+		if (_cgiParser.getState() < BODY)
 		{
-			Logger logger;
-			logger.error("CGI output incomplete or malformed");
-			// _response.reset();
-			// _response.startLine(502);
-			// _response.setBody("<html><body><h1>502 Bad Gateway</h1><p>CGI script did not produce valid output</p></body></html>");
+			logger.error("CGI output incomplete - no body received");
 			status = 502;
+			_response._cgiComplete = true;
+			_isRunning = false;
 			onError();
 			return;
 		}
 
+		// Send final chunk (0 size) to end chunked transfer
+		_response.feedRAW("");
+		_response._cgiComplete = true;
 		_isRunning = false;
 		return;
 	}
-	else
+
+	// Parse CGI output
+	_cgiParser.addChunk(buffer, bytesRead);
+
+	if (_cgiParser.isError())
 	{
-		logger.debug("CGIHandler::onReadable() - processing " + intToString(bytesRead) + " bytes of data");
-		// Parse CGI output headers
-		_cgiParser.addChunk(buffer, bytesRead);
+		logger.error("CGI response parsing error");
+		status = 502;
+		onError();
+		return;
+	}
 
-		if (_cgiParser.isError())
+	// When headers are complete, send HTTP response headers
+	if (_ShouldAddSLine && _cgiParser.getState() >= BODY)
+	{
+		logger.debug("CGI headers parsed, building HTTP response");
+		
+		// Get status code from CGI (default 200)
+		int statusCode = 200;
+		std::string cgiStatus = _cgiParser.getHeader("status");
+		if (!cgiStatus.empty())
 		{
-			Logger logger;
-			logger.error("CGI response parsing error");
-			// _response.reset();
-			// _response.startLine(502);
-			// _response.setBody("<html><body><h1>502 Bad Gateway</h1><p>Invalid CGI response</p></body></html>");
-			status = 502;
-			onError();
-			return;
+			statusCode = ft_atoi<int>(cgiStatus.c_str());
+			if (statusCode == 0)
+				statusCode = 200;
 		}
-
-		// If this is the first time we're getting data, start the response
-		logger.debug("parser state: " + intToString(_cgiParser.getState()));
-		if (_cgiParser.getState() == START_LINE || _cgiParser.getState() == HEADERS)
+		
+		// Start HTTP response
+		_response.startLine(statusCode);
+		
+		// Copy all CGI headers to HTTP response (except Status)
+		strmap& headers = _cgiParser.getHeaders();
+		for (strmap::iterator it = headers.begin(); it != headers.end(); ++it)
 		{
-			logger.debug("CGIHandler::onReadable() - setting up HTTP response from CGI output");
-			// Check for Status header in CGI response
-
-			std::string statusHeader = _cgiParser.getHeader("status");
-			int statusCode = 200;
-			if (!statusHeader.empty())
-			{
-				statusCode = ft_atoi<int>(statusHeader.substr(0, 3));
-			}
-
-			_response.startLine(statusCode);
-
-			// Copy headers from CGI output to response
-			strmap &headers = _cgiParser.getHeaders();
-			for (strmap::iterator it = headers.begin(); it != headers.end(); ++it)
-			{
-				if (it->first != "status") // Skip status header
-					_response.addHeader(it->first, it->second);
-			}
-
-			_response.endHeaders();
+			std::string key = it->first;
+			std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+			
+			if (key == "status")
+				continue; // Skip status header
+			
+			_response.addHeader(it->first, it->second);
 		}
-		logger.debug("parser state after headers: " + intToString(_cgiParser.getState()));
-		// Feed body data to response (only the actual body, not headers)
-		if (_cgiParser.getState() == BODY || _cgiParser.getState() == COMPLETE)
+		
+		// Add Transfer-Encoding for chunked response
+		_response.addHeader("Transfer-Encoding", "chunked");
+		
+		// End headers section
+		_response.endHeaders();
+		
+		_ShouldAddSLine = false;
+		
+		logger.debug("HTTP response headers done");
+	}
+
+	// Send body data as chunks (only if we're in BODY state)
+	if (_cgiParser.getState() >= BODY)
+	{
+		// _response.feedRAW("this is a test");
+		RingBuffer& body = _cgiParser.getBody();
+		size_t bodySize = body.read(buffer, sizeof(buffer));
+		
+		if (bodySize > 0)
 		{
-			logger.debug("CGIHandler::onReadable() - feeding body data to HTTP response");
-			RingBuffer body = _cgiParser.getBody();
-			size_t bodySize = body.getSize();
-			if (bodySize > 0)
-			{
-				char bodyBuffer[BUFFER_SIZE];
-				size_t toRead = (bodySize > BUFFER_SIZE) ? BUFFER_SIZE : bodySize;
-				size_t bytesRead = body.read(bodyBuffer, toRead);
-				if (bytesRead > 0)
-				{
-					logger.debug("CGIHandler::onReadable() - feeding " + intToString(bytesRead) + " bytes to response");
-					_response.feedRAW(bodyBuffer, bytesRead);
-				}
-			}
+			logger.debug("Sending CGI body chunk: " + intToString(bodySize) + " bytes");
+			_response.feedRAW(buffer, bodySize, true);
 		}
+		_response.feedRAW("");
+		_response._cgiComplete = true;
+		_isRunning = false;
 	}
 }
 
@@ -307,7 +311,8 @@ CGIHandler::CGIHandler(HTTPParser &parser, HTTPResponse &response, ServerConfig 
     _cgiParser(),
     _response(response),
     _isRunning(false),
-    _needBody(false)
+    _needBody(false),
+	_ShouldAddSLine(true)
 {
 	_cgiParser.setCGIMode(true);
 }

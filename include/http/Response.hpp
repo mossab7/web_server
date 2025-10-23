@@ -46,8 +46,8 @@ class HTTPResponse
 
 
     // used for chunked transfer (chunked transfer needs to be added in the headers)
-    void feedRAW(const char* data, size_t size);
-    void feedRAW(const std::string& data);
+    void feedRAW(const char* data, size_t size, bool addHexSize = true);
+    void feedRAW(const std::string& data, bool addHexSize = true);
 
     // serve file as body (sets Content-Length automatically)
     // this behavoir might change if we plan to support 'chunekd transfer'

@@ -46,6 +46,8 @@ private:
 	bool _isRunning;
 	bool _needBody;
 
+	bool _ShouldAddSLine;
+
 	void push_interpreter_if_needed();
 	void initEnv(HTTPParser &parser);
 	void initArgv(RouteMatch const &match);

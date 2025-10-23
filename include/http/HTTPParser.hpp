@@ -121,7 +121,7 @@ public:
     bool            isComplete();
     bool            isError();
 
-    RingBuffer getBody(void);
+    RingBuffer& getBody(void);
 
     void    reset();  // To reuse object for keep-alive connections
 

@@ -223,19 +223,32 @@ const std::string HTTPResponse::_getStatus(int code)
     }
 }
 
-void    HTTPResponse::feedRAW(const char* data, size_t size)
+void    HTTPResponse::feedRAW(const char* data, size_t size, bool addHexSize)
 {
+    if (!addHexSize)
+    {
+        _response.write(data, size);
+        return;
+    }
     std::stringstream ss;
     ss << std::hex << size;
     std::string sizeStr = ss.str();
 
     _response.write(sizeStr.data(), sizeStr.size());
-    _response.write(CRLF, 2); 
+    _response.write(CRLF, 2);
+
     _response.write(data, size);
+    
     _response.write(CRLF, 2); 
 }
-void    HTTPResponse::feedRAW(const std::string& data)
+void    HTTPResponse::feedRAW(const std::string& data, bool addHexSize)
 {
+    if (!addHexSize)
+    {
+        _response.write(data.data(), data.size());
+        return;
+    }
+
     std::stringstream ss;
     ss << std::hex << data.size();
     std::string sizeStr = ss.str();

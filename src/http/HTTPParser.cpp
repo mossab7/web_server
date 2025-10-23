@@ -27,7 +27,7 @@ std::string&    HTTPParser::getFragment(void) { return _fragment; }
 strmap&         HTTPParser::getHeaders(void) { return _headers; }
 std::string&    HTTPParser::getHeader(const std::string& key) { return _headers[key]; }
 
-RingBuffer      HTTPParser::getBody(void) { return _body; }
+RingBuffer&      HTTPParser::getBody(void) { return _body; }
 
 parse_state     HTTPParser::getState(void) { return _state; }
 bool    HTTPParser::isComplete(void) { return _state == COMPLETE; }
@@ -193,7 +193,7 @@ void    HTTPParser::_parseHeaders()
                 _isChunked = true;
             }
             else
-                _state = COMPLETE;
+                _state = _isCGIResponse ? BODY : COMPLETE;
             return;
         }
 
@@ -227,7 +227,12 @@ void    HTTPParser::_parseBody()
 {
     if (_buffer.empty() || _buffOffset >= _buffer.size())
         return;
-        
+    if (_isCGIResponse)
+    {
+        _body.write(_buffer.data() + _buffOffset, _buffer.size() - _buffOffset);
+        return;
+    }
+
     size_t available = _buffer.size() - _buffOffset;
     size_t needed = _contentLength - _bytesRead;
     size_t to_read = std::min(available, needed);
