@@ -39,7 +39,7 @@ void CGIHandler::onReadable()
 		onError();
 		return;
 	}
-	
+
 	if (bytesRead == 0)
 	{
 		logger.debug("CGIHandler::onReadable() - EOF reached");
@@ -129,9 +129,6 @@ void CGIHandler::onReadable()
 			logger.debug("Sending CGI body chunk: " + intToString(bodySize) + " bytes");
 			_response.feedRAW(buffer, bodySize, true);
 		}
-		_response.feedRAW("");
-		_response._cgiComplete = true;
-		_isRunning = false;
 	}
 }
 
@@ -185,6 +182,13 @@ void CGIHandler::onError()
 {
 	Logger logger;
 
+	// if (_cgiParser.isComplete())
+	// just in case of the whole pipe was consumed in a single go (fk this)
+	{
+		_response.feedRAW("", 0);
+		_response._cgiComplete = true;
+		_isRunning = false;
+	}
 	// Clean up pipes
 	if (_inputPipe.write_fd() != -1)
 	{
