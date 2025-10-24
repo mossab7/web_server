@@ -184,6 +184,16 @@ void CGIHandler::onError()
 
 	// if (_cgiParser.isComplete())
 	// just in case of the whole pipe was consumed in a single go (fk this)
+		
+	char buffer[BUFFER_SIZE];
+	ssize_t bytesRead = _outputPipe.read(buffer, BUFFER_SIZE);
+	if (bytesRead > 0)
+		_cgiParser.addChunk(buffer,bytesRead);
+		if (_cgiParser.getState() == ERROR)
+		{
+			//handle error;
+		}
+		_response.feedRAW(buffer,bytesRead);
 	{
 		_response.feedRAW("", 0);
 		_response._cgiComplete = true;
