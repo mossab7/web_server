@@ -190,14 +190,11 @@ void CGIHandler::onError()
 	if (bytesRead > 0)
 	{
 		_cgiParser.addChunk(buffer,bytesRead);
-	if (_cgiParser.getState() == ERROR)
-	{
-			//handle error;
-<<<<<<< HEAD
-		}
-=======
->>>>>>> 7b3ba3468d58272bf3fdea6583eacbc9fea5c85e
-	}
+	    if (_cgiParser.getState() == ERROR)
+	    {
+	    		//handle error;
+        }
+    }
 		_response.feedRAW(buffer,bytesRead);
 	{
 		_response.feedRAW("", 0);
