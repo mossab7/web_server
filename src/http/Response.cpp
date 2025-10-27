@@ -5,8 +5,8 @@ HTTPResponse::HTTPResponse(const std::string& version):
     _response(BUFF_SIZE * 2),
     _file_fd(-1),
     _file_size(0),
-    _bytes_sent(0),
-    _cgiComplete(false)
+    _bytes_sent(0)
+    //_cgiComplete(false)
 {}
 
 HTTPResponse::~HTTPResponse()

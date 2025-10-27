@@ -51,7 +51,7 @@ void CGIHandler::onReadable()
 		{
 			logger.error("CGI output incomplete - no body received");
 			status = 502;
-			_response._cgiComplete = true;
+			//_response._cgiComplete = true;
 			_isRunning = false;
 			onError();
 			return;
@@ -59,7 +59,7 @@ void CGIHandler::onReadable()
 
 		// Send final chunk (0 size) to end chunked transfer
 		_response.feedRAW("");
-		_response._cgiComplete = true;
+		//_response._cgiComplete = true;
 		_isRunning = false;
 		return;
 	}
@@ -74,6 +74,8 @@ void CGIHandler::onReadable()
 		onError();
 		return;
 	}
+
+	logger.debug("CGI output parsed, output buffer: " + std::string(buffer));
 
 	// When headers are complete, send HTTP response headers
 	if (_ShouldAddSLine && _cgiParser.getState() >= BODY)
@@ -127,6 +129,7 @@ void CGIHandler::onReadable()
 		if (bodySize > 0)
 		{
 			logger.debug("Sending CGI body chunk: " + intToString(bodySize) + " bytes");
+			logger.warning("CGI body chunk data: " + std::string(buffer, bodySize));
 			_response.feedRAW(buffer, bodySize);
 		}
 	}
@@ -185,20 +188,20 @@ void CGIHandler::onError()
 	// if (_cgiParser.isComplete())
 	// just in case of the whole pipe was consumed in a single go (fk this)
 		
-	char buffer[BUFFER_SIZE];
-	ssize_t bytesRead = _outputPipe.read(buffer, BUFFER_SIZE);
-	if (bytesRead > 0)
-	{
-		_cgiParser.addChunk(buffer,bytesRead);
-	    if (_cgiParser.getState() == ERROR)
-	    {
-	    		//handle error;
-        }
-    }
-		_response.feedRAW(buffer,bytesRead);
+	//char buffer[BUFFER_SIZE];
+	//ssize_t bytesRead = _outputPipe.read(buffer, BUFFER_SIZE);
+	//// if (bytesRead > 0)
+	// {
+	// 	_cgiParser.addChunk(buffer,bytesRead);
+	//     if (_cgiParser.getState() == ERROR)
+	//     {
+	//     		//handle error;
+    //     }
+	// 	// _response.feedRAW(buffer,bytesRead);
+    // }
 	{
 		_response.feedRAW("", 0);
-		_response._cgiComplete = true;
+		//_response._cgiComplete = true;
 		_isRunning = false;
 	}
 	// Clean up pipes
@@ -505,6 +508,7 @@ void CGIHandler::reset()
 	status = 0;
 	_isRunning = false;
 	_needBody = false;
+	_ShouldAddSLine = true;
 
 	// Reset the CGI parser for the next request
 	_cgiParser.reset();

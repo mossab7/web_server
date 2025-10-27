@@ -31,7 +31,7 @@ class HTTPResponse
     const std::string _getContentType(const std::string &filepath);
     const std::string _getStatus(int code);
     public:
-    bool   _cgiComplete;
+   // bool   _cgiComplete;
     HTTPResponse(const std::string& version);
     ~HTTPResponse();
     

@@ -23,12 +23,12 @@ bool    RequestHandler::isReqComplete() { return _request.isComplete(); }
 bool    RequestHandler::isResComplete() 
 { 
     // If CGI is running, response is not complete yet
-    //logger.debug("Checking if response is complete");
-    if (_isCGI && _cgi.isRunning())
-    {
-        logger.debug("Response not complete: CGI still running");
-        return false;
-    }
+    logger.debug("Checking if response is complete");
+     if (_isCGI && _cgi.isRunning())
+     {
+         logger.debug("Response not complete: CGI still running");
+         return false;
+     }
     return _response.isComplete(); 
 }
 bool    RequestHandler::isError() { return _request.isError(); }
@@ -59,6 +59,7 @@ size_t  RequestHandler::readNextChunk(char *buff, size_t size)
 
 void    RequestHandler::reset()
 {
+    logger.warning("Resetting RequestHandler state");
     _isCGI = false;
     _request.reset();
     _response.reset();

@@ -134,6 +134,7 @@ bool Client::_sendData()
     }
     ssize_t sent = _socket.send(_sendBuff, toSend, 0);
     logger.debug("Sending " + intToString(toSend) + " bytes to client fd: " + _strFD);
+    logger.debug(_sendBuff);
     if (sent < 0)
     {
         logger.error("Can't send data on client fd: " + _strFD);
