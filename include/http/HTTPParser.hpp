@@ -88,6 +88,7 @@ class HTTPParser
     std::string _buffer;
     size_t      _buffOffset;
 
+    void    _decodeURI();
     void    _parseChunkedSize();
     void    _parseChunkedSegment();
 

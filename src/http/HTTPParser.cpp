@@ -142,6 +142,9 @@ void    HTTPParser::_parseStartLine()
     if (_state == ERROR)
         return;
 
+    _decodeURI();
+    if (_state == ERROR)
+        return;
     size_t fragm = _uri.find('#');
     if (fragm != NPOS)
     {
@@ -321,4 +324,32 @@ void    HTTPParser::setBodyHandler(bodyHandler bh, void *data)
 {
     _bodyHandler = bh;
     _data = data;
+}
+
+void    HTTPParser::_decodeURI()
+{
+    std::string tmp;
+    long        nbr;
+
+    for (size_t i = 0; i < _uri.size(); ++i)
+    {
+        if (_uri[i] != '%')
+            continue;
+        // '/%A' means a bad request
+        if (i + 2 >= _uri.size())
+        {
+            _state = ERROR;
+            return;
+        }
+        tmp = _uri.substr(i + 1, 2);
+        nbr = std::strtol(tmp.c_str(), NULL, 16);
+        if (!isascii(nbr))
+        {
+            _state = ERROR;
+            return;
+        }
+        tmp = nbr;
+        _uri.replace(i, 3, tmp);
+    }
+    std::cout << "-------> uri: " << _uri << std::endl;
 }
