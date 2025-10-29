@@ -23,7 +23,7 @@ void Pipe::open()
 
 Pipe::~Pipe()
 {
-    close();
+   close();
 }
 
 int Pipe::read_fd() const

@@ -14,7 +14,7 @@ RequestHandler::~RequestHandler()
 { 
     Logger logger;
     logger.debug("RequestHandler destructor called");
-    reset(); 
+    //reset(); 
 }
 
 void    RequestHandler::feed(char* buff, size_t size) { _request.addChunk(buff, size); }

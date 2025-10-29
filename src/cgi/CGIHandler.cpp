@@ -207,11 +207,13 @@ void CGIHandler::onError()
 	// Clean up pipes
 	if (_inputPipe.write_fd() != -1)
 	{
+		logger.debug("CGIHandler::onError() - Closing input pipe" + intToString(_inputPipe.write_fd()));
 		_fd_manager.detachFd(_inputPipe.write_fd());
 		_inputPipe.closeWrite();
 	}
 	if (_outputPipe.read_fd() != -1)
 	{
+		logger.debug("CGIHandler::onError() - Closing output pipe" + intToString(_outputPipe.read_fd()));
 		_fd_manager.detachFd(_outputPipe.read_fd());
 		_outputPipe.closeRead();
 	}
@@ -342,9 +344,9 @@ CGIHandler::~CGIHandler()
 	Logger logger;
 	logger.debug("CGIHandler destructor called");
 	_fd_manager.remove(_inputPipe.write_fd());
+	_fd_manager.remove(_inputPipe.read_fd());
 	_fd_manager.remove(_outputPipe.read_fd());
-	_inputPipe.close();
-	_outputPipe.close();
+	_fd_manager.remove(_outputPipe.write_fd());
 	// Clean up any remaining environment variables
 	for (size_t i = 0; i < _env.size(); ++i)
 	{

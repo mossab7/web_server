@@ -29,6 +29,8 @@ public:
     }
     void remove(int fd) 
     {
+        Logger logger;
+        logger.debug("FdManager removing fd: " + intToString(fd));
         std::map<int, EventHandler*>::iterator it = fd_map.find(fd);
         if (it != fd_map.end()) 
         {
@@ -39,9 +41,11 @@ public:
     }
     void detachFd(int fd)
     {
+        Logger logger;
         std::map<int, EventHandler*>::iterator it = fd_map.find(fd);
         if (it != fd_map.end()) 
         {
+            logger.debug("FdManager detaching fd: " + intToString(fd));
             _epoll.remove_fd(fd);
             fd_map.erase(it);
         }
