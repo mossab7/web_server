@@ -351,5 +351,4 @@ void    HTTPParser::_decodeURI()
         tmp = nbr;
         _uri.replace(i, 3, tmp);
     }
-    std::cout << "-------> uri: " << _uri << std::endl;
 }
