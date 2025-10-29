@@ -58,6 +58,7 @@ public:
 	int get_fd();
 	int getStatus();
 	void start(const RouteMatch &match);
+	void destroy();
 	void onEvent(uint32_t events);
 	void onReadable();
 	void onWritable();

@@ -341,6 +341,10 @@ CGIHandler::~CGIHandler()
 	end();
 	Logger logger;
 	logger.debug("CGIHandler destructor called");
+	_fd_manager.remove(_inputPipe.write_fd());
+	_fd_manager.remove(_outputPipe.read_fd());
+	_inputPipe.close();
+	_outputPipe.close();
 	// Clean up any remaining environment variables
 	for (size_t i = 0; i < _env.size(); ++i)
 	{
@@ -520,4 +524,9 @@ void CGIHandler::reset()
 int CGIHandler::getStatus()
 {
 	return (status);
+}
+
+void CGIHandler::destroy()
+{
+	//cgi is owned by the client class so cleanup happens when client is destroyed
 }

@@ -36,10 +36,8 @@ void EventLoop::run()
                 // Try to cleanup the problematic handler
                 try {
                         EventHandler* handler = fd_manager.getOwner(events[i].data.fd);
-                        if (handler) {
+                        if (handler)
                             fd_manager.remove(events[i].data.fd);
-                            //delete handler;
-                    }
                 } 
                 catch (...) 
                 {

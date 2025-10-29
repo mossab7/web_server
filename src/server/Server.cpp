@@ -92,3 +92,9 @@ int Server::get_fd()
 {
     return (_socket.get_fd());
 }
+
+
+void Server::destroy()
+{
+    delete this;
+}

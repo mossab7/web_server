@@ -197,3 +197,9 @@ int Client::get_fd()
 {
     return (_socket.get_fd());
 }
+
+void Client::destroy()
+{
+    logger.debug("Client::destroy() called for fd: " + _strFD);
+    delete this;
+}

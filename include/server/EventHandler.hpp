@@ -15,6 +15,9 @@ class EventHandler
         EventHandler(ServerConfig &config ,FdManager &fdm);
         virtual ~EventHandler() {}
         virtual void onEvent(uint32_t events) = 0;
+        virtual void destroy() {// evey handler implement it's own destroy
+            //delete this;
+        };
         virtual int get_fd() = 0;
         virtual void onReadable() {};
         virtual void onWritable() {};

@@ -5,7 +5,7 @@
 #include "EventHandler.hpp"
 #include "Epoll.hpp"
 #include "../utils/Logger.hpp"
-
+std::string intToString(int value);
 class FdManager {
     private:
     Epoll &_epoll;
@@ -17,7 +17,8 @@ public:
         Logger logger;
         logger.debug("FdManager destructor called");
         for (std::map<int, EventHandler*>::iterator it = fd_map.begin(); it != fd_map.end(); ++it) {
-            delete it->second;
+            logger.debug("Cleaning up fd: " + intToString(it->first));
+            it->second->destroy();
         }
         fd_map.clear();
     }
@@ -32,7 +33,7 @@ public:
         if (it != fd_map.end()) 
         {
             _epoll.remove_fd(fd);
-            //delete it->second;
+            it->second->destroy();
             fd_map.erase(it);
         }
     }

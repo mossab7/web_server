@@ -60,6 +60,7 @@ public:
 
     // EventHandler interface
     int get_fd() const;
+    void destroy();
     void onEvent(uint32_t events);
     void onReadable();
     void onWritable();
