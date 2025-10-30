@@ -184,20 +184,20 @@ void    HTTPParser::_parseHeaders()
             // Check if we need to parse body based on content length
             strmap::iterator it = _headers.find("content-length");
             strmap::iterator it2 = _headers.find("transfer-encoding");
-            if (it != _headers.end() && it2 == _headers.end()) // prioritize chunked over con-lenth
+            if (it2 != _headers.end())
+            {
+                std::string& enc = it2->second;
+                std::transform(enc.begin(), enc.end(), enc.begin(), ::tolower);
+                _state = (it2->second == "chunked" ? CHUNK_SIZE : ERROR);
+                _isChunked = (_state == CHUNK_SIZE);
+            }
+            else if (it != _headers.end()) // prioritize chunked over con-lenth
             {
                 char*   ptr = NULL;
                 _contentLength = std::strtol(it->second.data(), &ptr, 10);
                 _state = (*ptr ? ERROR : BODY);
                 if (_state == ERROR) return;
                 _state = (_contentLength == 0) ? COMPLETE : BODY;
-            }
-            else if (it2 != _headers.end())
-            {
-                std::string& enc = it2->second;
-                std::transform(enc.begin(), enc.end(), enc.begin(), ::tolower);
-                _state = (it2->second == "chunked" ? CHUNK_SIZE : ERROR);
-                _isChunked = true;
             }
             else
                 _state = _isCGIResponse ? BODY : COMPLETE;
