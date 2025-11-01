@@ -77,7 +77,8 @@ void    Client::onWritable()
 
 bool Client::_readData()
 {
-    if (_state != ST_READING)
+    // we can process the request even if it is not complete
+    if (_state != ST_READING && _state != ST_PROCESSING)
         return false;
 
     ssize_t size = _socket.recv(_readBuff, BUFF_SIZE - 1, 0);
@@ -102,8 +103,11 @@ bool Client::_readData()
         _state = ST_PARSEERROR;
         return false;
     }
-    if (_handler.isReqComplete())
+    if (_handler.isReqHeaderComplete())
     {
+        // after parsing the header,
+        // we decide what to do with the body if any
+        logger.info("request processing started: " + _strFD);
         _state = ST_PROCESSING;
         return false;
     }
@@ -188,7 +192,8 @@ void    Client::_processError()
 void Client::_processRequest()
 {
     _keepAlive = _shouldKeepAlive();
-    _handler.processRequest();
+    if (!_handler.processRequest())
+        return;
     _state = ST_SENDING;
     _fd_manager.modify(this, WRITE_EVENT);
 }

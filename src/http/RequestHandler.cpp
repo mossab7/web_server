@@ -20,6 +20,7 @@ RequestHandler::~RequestHandler()
 void    RequestHandler::feed(char* buff, size_t size) { _request.addChunk(buff, size); }
 
 bool    RequestHandler::isReqComplete() { return _request.isComplete(); }
+bool    RequestHandler::isReqHeaderComplete() { return _request.getState() > HEADERS; }
 bool    RequestHandler::isResComplete() 
 { 
     // If CGI is running, response is not complete yet
@@ -76,7 +77,7 @@ bool    RequestHandler::keepAlive()
     return conn == "keep-alive";
 }
 
-void    RequestHandler::processRequest()
+bool    RequestHandler::processRequest()
 {
     _keepAlive = keepAlive();
 
@@ -86,13 +87,13 @@ void    RequestHandler::processRequest()
     {
         logger.error("Not a valid match: " + _request.getUri());
         _sendErrorResponse(404);
-        return;
+        return true;
     }
     if (!match.methodAllowed)
     {
         logger.error("Method not allowed: " + _request.getMethod());
         _sendErrorResponse(405);
-        return;
+        return true;
     }
 
     _isCGI = match.isCGI;
@@ -108,6 +109,8 @@ void    RequestHandler::processRequest()
         _handleOPTIONS();
     else
         _sendErrorResponse(501);
+
+    return _request.isComplete();
 }
 
 void    RequestHandler::_common(const RouteMatch& match)
@@ -165,13 +168,7 @@ void    RequestHandler::_handleGET(const RouteMatch& match)
 }
 void    RequestHandler::_handlePOST(const RouteMatch& match)
 {
-    std::cout << "hello]n]n\n";
-    std::string& h = _request.getHeader("content-type");
-    if (h.find("multipart") != NPOS)
-    {
-        _sendErrorResponse(415);
-        return;
-    }
+
     // 1. Check if upload is allowed (match.isUploadAllowed())
     // 2. Check body size against maxBodySize (413 if too large)
     // 3. If CGI: handle via CGI

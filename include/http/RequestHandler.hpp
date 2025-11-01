@@ -65,6 +65,8 @@ public:
     void    feed(char* buff, size_t size);
 
     bool    isReqComplete();
+    bool    isReqHeaderComplete();
+
     bool    isResComplete();
     bool    isError();
     bool    keepAlive();
@@ -72,7 +74,8 @@ public:
 
     void    setError(int code);
 
-    void    processRequest();
+    // return true if response is ready to be sent
+    bool    processRequest();
     size_t  readNextChunk(char* buff, size_t size);
 
     void    reset();
