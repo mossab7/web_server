@@ -99,8 +99,10 @@ void    HTTPParser::_parse()
         made_progress = (_state != old_state);
         // let's see what should we do with the body
         // in other parts of the code before we parsing it
-        if (made_progress && _state > HEADERS && _state != COMPLETE)
-            break;
+        // if (made_progress && _state > HEADERS && _state != COMPLETE)
+        //     break;
+        // this was proven to be a big mistake,
+        // the body is already in a separate buffer so why stop XD
         if (_buffOffset * 2 >= BUFF_SIZE)
         {
             _buffer.erase(0, _buffOffset);

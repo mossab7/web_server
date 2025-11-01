@@ -174,12 +174,20 @@ void    RequestHandler::_handlePOST(const RouteMatch& match)
     // 3. If CGI: handle via CGI
     // 4. If upload: save file to uploadDir
     // 5. Return 201 Created or appropriate response
-    // if (match.isUploadAllowed())
-    // {
-    //     // todo
-    //     // _response.startLine(201);
-    //     return;
-    // }
+    if (match.isUploadAllowed())
+    {
+        // todo
+        if (_request.isComplete())
+        {
+            _response.startLine(204);
+            _response.endHeaders();
+        }
+        RingBuffer& body = _request.getBody();
+        char buff[10000];
+        size_t s = body.read(buff, sizeof(buff));
+        std::cout.write(buff, s);
+        return;
+    }
     // if (size > match.maxBodySize)
     // {
     //     // todo
