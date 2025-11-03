@@ -36,15 +36,20 @@ bool    RequestHandler::isError() { return _request.isError(); }
 
 size_t  RequestHandler::readNextChunk(char *buff, size_t size)
 {
-    if (!responseStarted)
-        responseStarted = true;
     const RouteMatch& match = _router.match(_request.getUri(), _request.getMethod());
-	if (_isCGI && difftime(time(NULL), _cgiSrtartTime) >= match.location->cgi_timeout)
+	//logger.debug("cgi timeout: " + intToString(match.location->cgi_timeout));
+    //logger.debug("time diff: " + intToString(static_cast<int>(difftime(time(NULL), _cgiSrtartTime))));
+    //logger.debug("time now: " + intToString(static_cast<int>(time(NULL))));
+    //logger.debug("cgi start time: " + intToString(static_cast<int>(_cgiSrtartTime)));
+    if (_isCGI && difftime(time(NULL), _cgiSrtartTime) >= match.location->cgi_timeout)
 	{
         _cgi.end();
         logger.error("CGI timeout reached for script: " + match.scriptPath);
+        logger.debug("responseStarted: " + std::string(responseStarted ? "true" : "false"));
         if (responseStarted == false)
+        {
             _sendErrorResponse(504);
+        }
         else 
 		    return (-1);
 	}

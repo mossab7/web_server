@@ -6,30 +6,20 @@ Usage: /cgi/slow?sleep=5 (sleeps for 5 seconds)
 import os
 import time
 
-# Get sleep duration from query string
-query = os.environ.get('QUERY_STRING', '')
-sleep_time = 2  # default
 
-if 'sleep=' in query:
-    try:
-        sleep_time = int(query.split('sleep=')[1].split('&')[0])
-    except:
-        sleep_time = 2
+time.sleep(int(os.environ.get('QUERY_STRING', '0').split('=')[1]) if '=' in os.environ.get('QUERY_STRING', '') else 0)
 
-print("Content-Type: text/html")
-print()  # Empty line
-
+print("Content-Type: text/html", end="\r\n")
+print(end="\r\n")
 print("<!DOCTYPE html>")
 print("<html>")
-print("<head><title>Slow CGI Test</title></head>")
+print("<head><title>Hello from Python CGI</title></head>")
 print("<body>")
-print(f"<h1>Sleeping for {sleep_time} seconds...</h1>")
+print("<h1>Hello from Python CGI!</h1>")
+print("<p>This is a simple CGI script running with Python for CGI timeout testing.</p>")
+print("<p>Current time: ", end="")
+import datetime
+print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+print("</p>")
 print("</body>")
 print("</html>")
-
-# Flush to send headers immediately
-import sys
-sys.stdout.flush()
-
-# Sleep
-time.sleep(sleep_time)

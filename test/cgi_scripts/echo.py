@@ -5,6 +5,7 @@ CGI script that echoes back POST data and request information
 import os
 import sys
 
+
 # Write HTTP headers manually with CRLF endings
 sys.stdout.write("Content-Type: text/html\r\n")
 sys.stdout.write("Cache-Control: no-cache\r\n")

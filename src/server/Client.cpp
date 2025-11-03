@@ -139,6 +139,7 @@ bool Client::_sendData()
         // No data available yet, but response not complete (e.g., waiting for CGI)
         return true;
     }
+    _handler.responseStarted = true;
     ssize_t sent = _socket.send(_sendBuff, toSend, 0);
     //logger.debug("Sending " + intToString(toSend) + " bytes to client fd: " + _strFD);
     //logger.debug(_sendBuff);
