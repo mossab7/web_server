@@ -10,6 +10,7 @@ class FdManager {
     private:
     Epoll &_epoll;
     std::map<int, EventHandler*> fd_map; 
+    std::map<int, EventHandler *> timeout_map;
 public:
     FdManager(Epoll &epoll) : _epoll(epoll) {}
     ~FdManager() 
@@ -22,10 +23,12 @@ public:
         }
         fd_map.clear();
     }
-    void add(int fd, EventHandler* handler, int events)
+    void add(int fd, EventHandler* handler, int events, bool timeout = true)
     {
         _epoll.add_fd(fd, events);
         fd_map[fd] = handler;
+        if (timeout)
+            timeout_map[fd] = handler;
     }
     void remove(int fd) 
     {
@@ -34,9 +37,12 @@ public:
         std::map<int, EventHandler*>::iterator it = fd_map.find(fd);
         if (it != fd_map.end()) 
         {
+            if (timeout_map.find(fd) != timeout_map.end())
+                timeout_map.erase(fd);
             _epoll.remove_fd(fd);
             it->second->destroy();
             fd_map.erase(it);
+
         }
     }
     void detachFd(int fd)
@@ -46,6 +52,8 @@ public:
         if (it != fd_map.end()) 
         {
             logger.debug("FdManager detaching fd: " + intToString(fd));
+            if (timeout_map.find(fd) != timeout_map.end())
+                timeout_map.erase(fd);
             _epoll.remove_fd(fd);
             fd_map.erase(it);
         }
@@ -71,6 +79,10 @@ public:
     void modify(EventHandler* handler, uint32_t events) 
     {
         modify(handler->get_fd(), events);
+    }
+    std::map<int, EventHandler*>& getEventHandlersTimeouts() 
+    {
+        return timeout_map;
     }
 
 };

@@ -1,6 +1,8 @@
 #ifndef WEBSERV_CLIENT_HPP
 #define WEBSERV_CLIENT_HPP
 
+#define DEFAULT_CLIENT_TIMEOUT 60
+
 #include "EventHandler.hpp"
 #include "FdManager.hpp"
 #include "Socket.hpp"
@@ -9,6 +11,7 @@
 #include "ConfigParser.hpp"
 #include "Logger.hpp"
 #include "RequestHandler.hpp"
+#include <time.h>
 
 enum ClientState
 {
@@ -65,6 +68,7 @@ public:
     void onReadable();
     void onWritable();
     void onError();
+    void onTimeout();
     int get_fd();
 };
 

@@ -24,6 +24,7 @@
 #include "Routing.hpp"
 #include <ctype.h>
 #include "../utils/Logger.hpp"
+#include <time.h>
 #define BUFFER_SIZE 4096
 
 // Helper function to convert int to string
@@ -43,10 +44,13 @@ private:
 	HTTPParser &_Reqparser;
 	HTTPParser _cgiParser;
 	HTTPResponse &_response;
+	RouteMatch _match;
 	bool _isRunning;
 	bool _needBody;
 
 	bool _ShouldAddSLine;
+
+	time_t expires_at;
 
 	//void init_(HTTPParser &parser, RouteMatch const &match);
 	void initEnv(HTTPParser &parser);
@@ -63,6 +67,7 @@ public:
 	void onReadable();
 	void onWritable();
 	void onError();
+	void onTimeout();
 	bool isRunning() const;
 	void end();
 	void reset();

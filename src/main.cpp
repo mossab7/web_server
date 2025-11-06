@@ -93,7 +93,7 @@ int main(int ac, char **av)
         {
             Server *server = new Server(*it, eventLoop.fd_manager);
             serverInstances.push_back(server);
-            eventLoop.fd_manager.add(server->get_fd(), server, EPOLLIN);
+            eventLoop.fd_manager.add(server->get_fd(), server, EPOLLIN, false);
             logger.info("Configured server: " + it->name + " on " + it->host + ":" + intToString(it->port));
         }
         logger.info("Starting webserver...");

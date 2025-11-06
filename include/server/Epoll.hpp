@@ -7,6 +7,8 @@
 #include <vector>
 #include "Socket.hpp"
 
+#define TIMEOUT_EVENT (1 << 5)
+#define IS_TIMEOUT_EVENT(event) ((event) & TIMEOUT_EVENT)
 #define IS_READ_EVENT(event) ((event) & EPOLLIN)
 #define IS_WRITE_EVENT(event) ((event) & EPOLLOUT)
 #define IS_ERROR_EVENT(event) ((event) & (EPOLLERR | EPOLLHUP))

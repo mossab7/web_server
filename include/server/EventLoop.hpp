@@ -15,6 +15,8 @@ class EventLoop
         EventLoop();
         ~EventLoop();
         void run();
+        void expireTimeouts();
+        int computeNextTimeout();
 };
 
 #endif //EVENT_LOOP_HPP

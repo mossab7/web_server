@@ -4,7 +4,7 @@ void CGIHandler::onEvent(uint32_t events)
 {
 	Logger logger;
 	logger.debug("CGIHandler::onEvent called with events: " + intToString(events));
-	
+	_updateExpiresAt(time(NULL) + _match.location->cgi_timeout);
 	if (IS_ERROR_EVENT(events))
 	{
 		logger.debug("CGIHandler: Error event received");
@@ -20,6 +20,11 @@ void CGIHandler::onEvent(uint32_t events)
 	{
 		logger.debug("CGIHandler: Write event received");
 		onWritable();
+	}
+	if (IS_TIMEOUT_EVENT(events))
+	{
+		logger.debug("CGIHandler: Timeout event received");
+		onTimeout();
 	}
 }
 
@@ -236,11 +241,16 @@ void CGIHandler::onError()
 		{
 			int exitStatus = WEXITSTATUS(waitStatus);
 			logger.debug("CGI process exited with status: " + intToString(exitStatus));
+			if (exitStatus != 0)
+			{
+				status = 502;
+			}
 		}
 		else if (WIFSIGNALED(waitStatus))
 		{
 			int signal = WTERMSIG(waitStatus);
 			logger.error("CGI process terminated by signal: " + intToString(signal));
+			status = 502;
 		}
 	}
 
@@ -322,7 +332,7 @@ void CGIHandler::initEnv(HTTPParser &parser)
 }
 
 CGIHandler::CGIHandler(HTTPParser &parser, HTTPResponse &response, ServerConfig &config, FdManager &fdm)
-: EventHandler(config, fdm),
+: EventHandler(config, fdm, -1),
     _scriptPath(""),
     _inputPipe(),
     _outputPipe(),
@@ -335,7 +345,7 @@ CGIHandler::CGIHandler(HTTPParser &parser, HTTPResponse &response, ServerConfig 
     _needBody(false),
 	_ShouldAddSLine(true)
 {
-	_cgiParser.setCGIMode(true);
+	_cgiParser.setCGIMode(true); 
 }
 
 CGIHandler::~CGIHandler()
@@ -343,17 +353,6 @@ CGIHandler::~CGIHandler()
 	end();
 	Logger logger;
 	logger.debug("CGIHandler destructor called");
-	_fd_manager.remove(_inputPipe.write_fd());
-	_fd_manager.remove(_inputPipe.read_fd());
-	_fd_manager.remove(_outputPipe.read_fd());
-	_fd_manager.remove(_outputPipe.write_fd());
-	// Clean up any remaining environment variables
-	for (size_t i = 0; i < _env.size(); ++i)
-	{
-		if (_env[i] != NULL)
-			delete[] _env[i];
-	}
-	_env.clear();
 }
 
 void CGIHandler::start(const RouteMatch &match)
@@ -366,7 +365,7 @@ void CGIHandler::start(const RouteMatch &match)
 
 	_needBody = (_Reqparser.getMethod() == "POST" || _Reqparser.getMethod() == "PUT");
 	_scriptPath = match.scriptPath;
-
+	_match = match;
 	try
 	{
 		initArgv(match);
@@ -381,6 +380,14 @@ void CGIHandler::start(const RouteMatch &match)
 	Logger logger;
 	logger.debug("CGI script path: " + _scriptPath);
 	logger.debug("CGI interpreter path: " + _interpreterPath);
+	/*
+	//check permissions here
+	if (access(_interpreterPath.c_str(), X_OK) == -1)
+	{
+		status = 500;
+		throw std::runtime_error("CGI interpreter not executable: " + _interpreterPath);
+	}
+	*/
 	_pid = fork();
 	if (_pid < 0)
 	{
@@ -434,9 +441,10 @@ void CGIHandler::start(const RouteMatch &match)
 
 		// Register pipes with epoll
 		RingBuffer body = _Reqparser.getBody();
+		_expiresAt = time(NULL) + match.location->cgi_timeout;
 		if (_needBody && body.getSize() > 0)
 		{
-			_fd_manager.add(_inputPipe.write_fd(), this, EPOLLOUT);
+			_fd_manager.add(_inputPipe.write_fd(), this, EPOLLOUT, false);
 		}
 		else
 		{
@@ -447,6 +455,7 @@ void CGIHandler::start(const RouteMatch &match)
 		_fd_manager.add(_outputPipe.read_fd(), this, EPOLLIN);
 
 		_isRunning = true;
+		expires_at = time(NULL) + match.location->cgi_timeout;
 		for (size_t i = 0; i < _env.size(); ++i)
 		{
 			delete[] _env[i];
@@ -474,6 +483,17 @@ bool CGIHandler::isRunning() const
 
 void CGIHandler::end()
 {
+	_fd_manager.remove(_inputPipe.write_fd());
+	_fd_manager.remove(_outputPipe.read_fd());
+	_inputPipe.close();
+	_outputPipe.close();
+	// Clean up any remaining environment variables
+	for (size_t i = 0; i < _env.size(); ++i)
+	{
+		if (_env[i] != NULL)
+			delete[] _env[i];
+	}
+	_env.clear();
 	if (!_isRunning)
 		return;
 
@@ -533,4 +553,14 @@ int CGIHandler::getStatus()
 void CGIHandler::destroy()
 {
 	//cgi is owned by the client class so cleanup happens when client is destroyed
+}
+
+void CGIHandler::onTimeout()
+{
+	Logger logger;
+	logger.error("CGIHandler::onTimeout() called - CGI script timed out");
+	end();
+	status = 504;
+	_response.feedRAW("", 0);
+	_isRunning = false;
 }

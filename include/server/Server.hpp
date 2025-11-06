@@ -18,6 +18,7 @@ class Server : public EventHandler
         void onReadable();
         void onWritable();
         void onError();
+        void onTimeout();
         int get_fd();
 };
 

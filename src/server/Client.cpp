@@ -8,7 +8,7 @@ std::string intToString(int value)
 }
 
 Client::Client(int socket_fd, ServerConfig &config, FdManager &fdm) :
-    EventHandler(config, fdm),
+    EventHandler(config, fdm, time(NULL) + DEFAULT_CLIENT_TIMEOUT),
     _socket(socket_fd),
     _resp("HTTP/1.1"),
     _handler(config, _req, _resp, fdm),
@@ -26,10 +26,11 @@ Client::~Client()
 int Client::get_fd() const { return _socket.get_fd(); }
 
 
-
 /*--------------------------------------------------------*/
 void Client::onEvent(uint32_t events)
 {
+    //logger.debug("Event on client fd: " + _strFD + " events: " + intToString(events));
+    _updateExpiresAt(time(NULL) + DEFAULT_CLIENT_TIMEOUT);
     if (IS_ERROR_EVENT(events)) {
         onError();
         return;
@@ -38,6 +39,8 @@ void Client::onEvent(uint32_t events)
         onReadable();
     if (IS_WRITE_EVENT(events))
         onWritable();
+    if (IS_TIMEOUT_EVENT(events))
+        onTimeout();
 }
 
 void    Client::onError()
@@ -214,3 +217,10 @@ void Client::destroy()
     logger.debug("Client::destroy() called for fd: " + _strFD);
     delete this;
 }
+
+void Client::onTimeout()
+{
+    logger.error("Timeout on client fd: " + _strFD);
+    _fd_manager.remove(get_fd());
+}
+
