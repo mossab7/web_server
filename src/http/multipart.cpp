@@ -8,7 +8,8 @@ Multipart::Multipart(RingBuffer& body):
 { }
 Multipart::~Multipart()
 {
-    _outfile.close();
+    if (_outfile.is_open())
+        _outfile.close();
 }
 
 
@@ -16,6 +17,11 @@ void    Multipart::setUploadPath(const std::string& path) { _uploadDict = path; 
 void    Multipart::setBoundry(const std::string& bound)
 {
     _str_boundry  = "--" + bound;
+    if (_str_boundry.size() >= sizeof(_tmp_buff))
+    {
+        _logger.error("Boundry too large 'RFC 2046'");
+        _onError();
+    }
 }
 
 Multipart::parts_t&   Multipart::getParts(void) { return _parts; }
@@ -54,7 +60,7 @@ label:
     case ST_HEADERS     : _parseHeaders(); break;
     case ST_DATA        : _parseData(); break;
     case ST_SAVEPART    : _savePart(); break;
-    case ST_MERROR      : _onError(); break;
+    case ST_MERROR      : return;
     case ST_COMPLETE    : return;
     }
     if (_state != old)
@@ -72,7 +78,7 @@ void    Multipart::_seekBound()
     if (!str) // advace the read 
     {
         if (s > _str_boundry.size())
-            _buff.advanceRead(s - (size_t)_tmp_buff);
+            _buff.advanceRead(s - _str_boundry.size());
         return;
     }
 
@@ -131,8 +137,7 @@ void    Multipart::_parseHeaders()
     if (!_outfile.is_open())
     {
         _logger.error("could open file for upload: " + _part.filePath);
-        _onError();
-        return;
+        goto failed;
     }
     _part.isfile = true;
 
@@ -183,8 +188,8 @@ void    Multipart::_handleBody(size_t size)
 void    Multipart::_onError()
 {
     _logger.error("parsing error on multipart/form-data");    
-    _state = ST_MERROR;
     reset();
+    _state = ST_MERROR;
 }
 
 void    Multipart::reset()
@@ -242,5 +247,17 @@ void    Multipart::_savePart()
 //     Multipart::parts_t &parts = parser.getParts();
 //     std::cout << "number of parts: " << parts.size() << std::endl;
 //     std::cout << "is complete    : " << parser.isComplete() << std::endl;
+//     std::cout << "is Error       : " << parser.isError() << std::endl;
+
+//     for (size_t i = 0; i < parts.size(); ++i)
+//     {
+//         std::cout << "------------------------------\n";
+//         std::cout << parts[i].name << std::endl;
+//         if (parts[i].isfile)
+//         {
+//         std::cout << parts[i].filename << std::endl;
+//         std::cout << parts[i].filePath << std::endl;
+//         }
+//     }
 
 // }
