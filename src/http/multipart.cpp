@@ -206,7 +206,8 @@ void    Multipart::reset()
     _parts.clear();
     _str_boundry.clear();
     _uploadDict.clear();
-    _outfile.close();
+    if (_outfile.is_open())
+        _outfile.close();
     _resetPart();
 }
 void    Multipart::_resetPart()
@@ -219,6 +220,11 @@ void    Multipart::_resetPart()
 }
 void    Multipart::_savePart()
 {
+    if (_outfile.is_open())
+    {
+        _outfile.close();
+        _logger.success("file uploaded: " + _part.filePath);
+    }
     _state = ST_SEEKBOUND;
     _parts.push_back(_part);
     _resetPart();
