@@ -26,6 +26,7 @@ class RequestHandler
 
     bool            _keepAlive;
     bool            _isCGI;
+    bool            _isDirSet;
 
     void    _common(const RouteMatch& match);
     // i wanted to use an iteface for this, but it's overkill

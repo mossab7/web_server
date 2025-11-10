@@ -8,6 +8,7 @@ RequestHandler::RequestHandler(ServerConfig &config, HTTPParser& req, HTTPRespon
     _cgiSrtartTime(0),
     _keepAlive(false),
     _isCGI(false),
+    _isDirSet(false),
     responseStarted(false)
 {}
 RequestHandler::~RequestHandler() 
@@ -69,6 +70,7 @@ void    RequestHandler::reset()
     _isCGI = false;
     _request.reset();
     _response.reset();
+    _isDirSet = false;
     _cgi.reset();
 }
 
@@ -188,7 +190,11 @@ void    RequestHandler::_handlePOST(const RouteMatch& match)
     // }
     if (match.isUploadAllowed())
     {
-        _request.setUploadDir(match.uploadDir);
+        if (!_isDirSet)
+        {
+            _request.setUploadDir(match.uploadDir);
+            _isDirSet = true;
+        }
         _request.parseMultipart();
         if (_request.isComplete())
         {
