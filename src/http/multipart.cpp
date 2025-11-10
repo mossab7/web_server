@@ -12,7 +12,6 @@ Multipart::~Multipart()
         _outfile.close();
 }
 
-
 void    Multipart::setUploadPath(const std::string& path) { _uploadDict = path; }
 void    Multipart::setBoundry(const std::string& bound)
 {
@@ -30,25 +29,6 @@ multipartState      Multipart::getState(void) { return _state; }
 bool    Multipart::isComplete(void) { return _state == ST_COMPLETE; }
 bool    Multipart::isError(void) { return _state == ST_MERROR; }
 
-// the body is something like this:
-/*
---------------------------840a7da8fa23b607
-Content-Disposition: form-data; name="file"; filename="photo.jpg"
-Content-Type: image/jpeg
-
-[BINARY DATA]
---------------------------840a7da8fa23b607
-Content-Disposition: form-data; name="bio"
-
-this is just a dumy text. i think normal texts like this should be 
-outputed to the console no need to store them anywhere
---------------------------840a7da8fa23b607
-Content-Disposition: form-data; name="body"; filename="photo.jpg"
-Content-Type: image/jpeg
-
-[BINARY DATA]
---------------------------840a7da8fa23b607--
-*/
 void    Multipart::parse()
 {
 label:
@@ -175,6 +155,8 @@ void    Multipart::_parseData()
 void    Multipart::_handleBody(size_t size)
 {
     if (!size) return;
+    if (_state == ST_SAVEPART)
+        size -= 2; // skip the CRLF
     if (_part.isfile)
     {
         _outfile.write(_tmp_buff, size);
@@ -183,14 +165,9 @@ void    Multipart::_handleBody(size_t size)
             _logger.error("Faild to write to file: " + _part.filePath);
             _onError();
         }
-        // std::cout << "chunk to file: ";
-        // std::cout.write(_tmp_buff, size);
         return;
     }
     _part.body.write(_tmp_buff, size);
-    // std::cout << "chunk to body: ";
-    // std::cout.write(_tmp_buff, size);
-    
 }
 
 void    Multipart::_onError()
@@ -229,49 +206,3 @@ void    Multipart::_savePart()
     _parts.push_back(_part);
     _resetPart();
 }
-
-// int main()
-// {
-//     char test[] =
-//     "--------------------------840a7da8fa23b607" CRLF
-//     "Content-Disposition: form-data; name=\"file\"; filename=\"photo.jpg\"" CRLF
-//     "Content-Type: image/jpeg" CRLF
-//     CRLF
-//     "[BINARY DATA]" CRLF
-//     "--------------------------840a7da8fa23b607" CRLF
-//     "Content-Disposition: form-data; name=\"bio\"" CRLF
-//     CRLF
-//     "this is just a dummy text" CRLF
-//     "--------------------------840a7da8fa23b607" CRLF
-//     "Content-Disposition: form-data; name=\"body\"; filename=\"photo.jpg\"" CRLF
-//     "Content-Type: image/jpeg" CRLF
-//     CRLF
-//     "[BINARY DATA]" CRLF
-//     "--------------------------840a7da8fa23b607--" CRLF;
-
-//     RingBuffer bufftest(BUFSIZ);
-//     bufftest.write(test, sizeof(test));
-
-//     Multipart parser(bufftest);
-//     parser.setBoundry("------------------------840a7da8fa23b607");
-
-//     parser.setUploadPath("./");
-//     parser.parse();
-
-//     Multipart::parts_t &parts = parser.getParts();
-//     std::cout << "number of parts: " << parts.size() << std::endl;
-//     std::cout << "is complete    : " << parser.isComplete() << std::endl;
-//     std::cout << "is Error       : " << parser.isError() << std::endl;
-
-//     for (size_t i = 0; i < parts.size(); ++i)
-//     {
-//         std::cout << "------------------------------\n";
-//         std::cout << parts[i].name << std::endl;
-//         if (parts[i].isfile)
-//         {
-//         std::cout << parts[i].filename << std::endl;
-//         std::cout << parts[i].filePath << std::endl;
-//         }
-//     }
-
-// }
