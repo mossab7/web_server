@@ -196,6 +196,11 @@ void    RequestHandler::_handlePOST(const RouteMatch& match)
             _isDirSet = true;
         }
         _request.parseMultipart();
+        if (_request.isError())
+        {
+            _sendErrorResponse(500);
+            return;
+        }
         if (_request.isComplete())
         {
             _response.startLine(201);

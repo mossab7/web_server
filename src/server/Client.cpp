@@ -196,7 +196,7 @@ void    Client::_processError()
 void Client::_processRequest()
 {
     _keepAlive = _shouldKeepAlive();
-    if (!_handler.processRequest())
+    if (!_handler.processRequest() && !_handler.isError())
         return;
     _state = ST_SENDING;
     _fd_manager.modify(this, WRITE_EVENT);
