@@ -259,6 +259,7 @@ void    RequestHandler::_sendErrorResponse(int code)
 {
     _response.reset();
     _response.startLine(code);
+    _response.addHeader("Access-Control-Allow-Origin", "*"); 
     if (!_response.attachFile(_router.getErrorPage(code)))
         _response.setBody(getErrorPage(code));
 }

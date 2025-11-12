@@ -213,6 +213,15 @@
             word-break: break-all;
         }
         
+        .response-details {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
         .progress {
             width: 100%;
             height: 8px;
@@ -279,6 +288,7 @@
         <div class="response" id="response">
             <div class="response-title" id="responseTitle"></div>
             <div class="response-body" id="responseBody"></div>
+            <div class="response-details" id="responseDetails"></div>
         </div>
     </div>
 
@@ -287,6 +297,7 @@
         const response = document.getElementById('response');
         const responseTitle = document.getElementById('responseTitle');
         const responseBody = document.getElementById('responseBody');
+        const responseDetails = document.getElementById('responseDetails');
         const progress = document.getElementById('progress');
         const progressBar = document.getElementById('progressBar');
         const fileInput = document.getElementById('files');
@@ -340,7 +351,7 @@
             const endpoint = document.getElementById('endpoint').value;
             
             if (selectedFiles.length === 0) {
-                showResponse('error', 'Error ✗', 'Please select at least one file to upload');
+                showResponse('error', 'Error ✗', 'Please select at least one file to upload', '');
                 return;
             }
 
@@ -350,7 +361,7 @@
             });
             
             // Show loading state
-            showResponse('loading', 'Uploading...', 'Please wait while we upload your files...');
+            showResponse('loading', 'Uploading...', 'Please wait while we upload your files...', '');
             progress.style.display = 'block';
             progressBar.style.width = '0%';
             submitBtn.disabled = true;
@@ -370,12 +381,16 @@
                     submitBtn.disabled = false;
                     progress.style.display = 'none';
                     
+                    const details = `HTTP ${xhr.status} ${xhr.statusText}`;
+                    
                     if (xhr.status >= 200 && xhr.status < 300) {
                         showResponse('success', 'Success! ✓', 
-                            `Status: ${xhr.status}\n\nResponse:\n${xhr.responseText || 'No response body'}`);
+                            xhr.responseText || 'Upload completed successfully',
+                            details);
                     } else {
-                        showResponse('error', 'Error ✗', 
-                            `Status: ${xhr.status}\n\nResponse:\n${xhr.responseText || 'No response body'}`);
+                        showResponse('error', `Server Error (${xhr.status}) ✗`, 
+                            xhr.responseText || xhr.statusText || 'Server returned an error',
+                            details);
                     }
                 });
                 
@@ -383,16 +398,30 @@
                     submitBtn.disabled = false;
                     progress.style.display = 'none';
                     showResponse('error', 'Network Error ✗', 
-                        'Could not connect to server. Make sure your webserver is running!');
+                        'Could not connect to server. Possible causes:\n' +
+                        '• Server is not running\n' +
+                        '• Wrong endpoint URL\n' +
+                        '• CORS policy blocking the request\n' +
+                        '• Network connectivity issue',
+                        `Target: ${endpoint}`);
+                });
+                
+                xhr.addEventListener('timeout', () => {
+                    submitBtn.disabled = false;
+                    progress.style.display = 'none';
+                    showResponse('error', 'Timeout Error ✗', 
+                        'The request took too long to complete. Server might be overloaded or not responding.',
+                        `Target: ${endpoint}`);
                 });
                 
                 xhr.open('POST', endpoint);
+                xhr.timeout = 30000; // 30 second timeout
                 xhr.send(formData);
                 
             } catch (error) {
                 submitBtn.disabled = false;
                 progress.style.display = 'none';
-                showResponse('error', 'Error ✗', error.message);
+                showResponse('error', 'Error ✗', error.message, error.stack || '');
             }
         });
 
@@ -404,11 +433,18 @@
             progress.style.display = 'none';
         });
 
-        function showResponse(type, title, body) {
+        function showResponse(type, title, body, details) {
             response.className = 'response ' + type;
             response.style.display = 'block';
             responseTitle.textContent = title;
             responseBody.textContent = body;
+            
+            if (details) {
+                responseDetails.textContent = details;
+                responseDetails.style.display = 'block';
+            } else {
+                responseDetails.style.display = 'none';
+            }
         }
 
         function formatFileSize(bytes) {
