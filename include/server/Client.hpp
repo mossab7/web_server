@@ -1,7 +1,7 @@
 #ifndef WEBSERV_CLIENT_HPP
 #define WEBSERV_CLIENT_HPP
 
-#define DEFAULT_CLIENT_TIMEOUT 60
+#define DEFAULT_CLIENT_TIMEOUT 7
 
 #include "EventHandler.hpp"
 #include "FdManager.hpp"

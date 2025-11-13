@@ -269,7 +269,8 @@ void CGIHandler::initArgv(RouteMatch const &match)
 		_interpreterPath = match.scriptInterpreter;
 		_argv.push_back(const_cast<char *>(_interpreterPath.c_str()));
 	}
-
+	Logger logger;
+	logger.debug("CGI interpreter path set to: " + _interpreterPath);
 	_scriptPath = match.scriptPath;
 	_argv.push_back(const_cast<char *>(_scriptPath.c_str()));
 	_argv.push_back(NULL); // Null-terminate for execve

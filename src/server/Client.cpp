@@ -29,7 +29,7 @@ int Client::get_fd() const { return _socket.get_fd(); }
 /*--------------------------------------------------------*/
 void Client::onEvent(uint32_t events)
 {
-    //logger.debug("Event on client fd: " + _strFD + " events: " + intToString(events));
+    logger.debug("Event on client fd: " + _strFD + " events: " + intToString(events));
     _updateExpiresAt(time(NULL) + DEFAULT_CLIENT_TIMEOUT);
     if (IS_ERROR_EVENT(events)) {
         onError();

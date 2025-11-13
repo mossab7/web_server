@@ -45,11 +45,13 @@ int EventLoop::computeNextTimeout()
 
 void EventLoop::expireTimeouts()
 {
-    time_t now = time(NULL);
-    std::map<int, EventHandler*>& handlers = fd_manager.getEventHandlersTimeouts();
-
+    std::map<int, EventHandler*> handlers = fd_manager.getEventHandlersTimeouts();
+    
     for (std::map<int, EventHandler*>::iterator it = handlers.begin(); it != handlers.end(); ++it)
     {
+        time_t now = time(NULL);
+        logger.info("Checking timeout for fd: " + SSTR(it->first));
+        logger.info("time now : " + SSTR(now) + " will expires in: " + SSTR(it->second->getExpiresAt()) + " seconds");
         EventHandler* handler = it->second;
         if (!handler)
             continue;
@@ -64,6 +66,7 @@ void EventLoop::expireTimeouts()
                 logger.error("Unknown exception in onEvent()");
             }
         }
+        logger.info("Finished checking timeout for fd");
     }
 }
 
@@ -73,12 +76,13 @@ void EventLoop::run()
     while(!g_shutdown)
     {
         //logger.debug("next epoll wait with timeout: " + SSTR(computeNextTimeout()) + " ms");
-        std::vector<epoll_event> events = epoll.wait(); 
+        std::vector<epoll_event> events = epoll.wait(15000); // 15 seconds max wait
         // if (events.empty())
         // {
         //     logger.debug("No events, expired timeouts processed");
         //     continue;
         // }
+       // logger.debug("iterate");
         expireTimeouts();
         for (size_t i = 0; i < events.size(); i++) 
         {
