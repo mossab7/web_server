@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 
 SESSION_FILE = "/tmp/sessions.json"
-SESSION_TIMEOUT = 5
+SESSION_TIMEOUT = 60
 
 # Load sessions
 try:
@@ -16,8 +16,12 @@ except:
 
 # Clean expired sessions
 current_time = time.time()
-sessions = {sid: data for sid, data in sessions.items() 
-            if current_time - data.get('timestamp', 0) < SESSION_TIMEOUT}
+valid_sessions = {}
+for session_id, session_data in sessions.items():
+    timestamp = session_data.get('timestamp', 0)
+    if current_time - timestamp < SESSION_TIMEOUT:
+        valid_sessions[session_id] = session_data
+sessions = valid_sessions
 
 # Get session ID from cookie
 cookie = os.environ.get('HTTP_COOKIE', '')
