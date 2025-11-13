@@ -11,42 +11,136 @@ sys.stdout.write("Content-Type: text/html\r\n")
 sys.stdout.write("Cache-Control: no-cache\r\n")
 sys.stdout.write("\r\n")  # End of headers
 
-# Now print the HTML body (normal \n fine here — browsers handle HTML)
-print("<!DOCTYPE html>")
-print("<html>")
-print("<head><title>CGI Echo Test</title></head>")
-print("<body>")
-print("<h1>CGI Echo Test</h1>")
+# Now print the HTML body
+print("""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGI Echo Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 48px;
+        }
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 32px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .section {
+            margin-bottom: 32px;
+        }
+        .section-title {
+            color: #404040;
+            font-weight: 500;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+        .info-box {
+            background: #fafafa;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            padding: 16px;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 13px;
+            color: #404040;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+        .empty-state {
+            color: #737373;
+            font-style: italic;
+        }
+        .status {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 32px;
+        }
+        .status::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="status">Request Received</div>
+        <h1>CGI Echo Test</h1>""")
 
 # Display environment variables
-print("<h2>Environment Variables</h2>")
-print("<table border='1'>")
-print("<tr><th>Variable</th><th>Value</th></tr>")
+print("""        <div class="section">
+            <div class="section-title">Environment Variables</div>
+            <div class="info-box">""")
+
 for key in sorted(os.environ.keys()):
     if key.startswith('HTTP_') or key in [
         'REQUEST_METHOD', 'QUERY_STRING', 'CONTENT_TYPE', 'CONTENT_LENGTH',
         'SCRIPT_NAME', 'SCRIPT_FILENAME', 'SERVER_NAME', 'SERVER_PORT',
         'GATEWAY_INTERFACE', 'SERVER_PROTOCOL'
     ]:
-        print(f"<tr><td>{key}</td><td>{os.environ[key]}</td></tr>")
-print("</table>")
+        print(f"{key}: {os.environ[key]}<br>")
+
+print("""            </div>
+        </div>""")
 
 # Display POST data
-print("<h2>POST Data</h2>")
+print("""        <div class="section">
+            <div class="section-title">POST Data</div>
+            <div class="info-box">""")
+
 content_length = os.environ.get('CONTENT_LENGTH', '0')
 if content_length and content_length != '0':
     post_data = sys.stdin.read(int(content_length))
-    print(f"<pre>{post_data}</pre>")
+    print(f"{post_data}")
 else:
-    print("<p>No POST data received</p>")
+    print('<span class="empty-state">No POST data received</span>')
+
+print("""            </div>
+        </div>""")
+
+# ----------------------------------
+
+# ----------------------------------
+
 
 # Display query string
-print("<h2>Query String</h2>")
+print("""        <div class="section">
+            <div class="section-title">Query String</div>
+            <div class="info-box">""")
+
 query_string = os.environ.get('QUERY_STRING', '')
 if query_string:
-    print(f"<pre>{query_string}</pre>")
+    print(f"{query_string}")
 else:
-    print("<p>No query string</p>")
+    print('<span class="empty-state">No query string</span>')
 
-print("</body>")
-print("</html>")
+print("""            </div>
+        </div>
+    </div>
+</body>
+</html>""")

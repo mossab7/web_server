@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Routes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            border-radius: 4px;
+            padding: 48px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        h1 {
+            color: #1a1a1a;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #737373;
+            font-size: 14px;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 4px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #404040;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .route-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        
+        .route-card {
+            border: 1px solid #e5e5e5;
+            border-radius: 3px;
+            padding: 20px;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .route-card:hover {
+            border-color: #1a1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .route-path {
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        
+        .route-desc {
+            font-size: 13px;
+            color: #737373;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        
+        .route-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 2px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        
+        .badge-method {
+            background: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+        
+        .badge-cgi {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        
+        .badge-redirect {
+            background: #f3e8ff;
+            color: #6b21a8;
+            border: 1px solid #e9d5ff;
+        }
+        
+        .badge-autoindex {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .badge-delete {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .badge-upload {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .info-box {
+            background: #fafafa;
+            border: 1px solid #e5e5e5;
+            border-radius: 3px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+        
+        .info-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #404040;
+        }
+        
+        .info-text {
+            font-size: 13px;
+            color: #737373;
+            line-height: 1.6;
+        }
+        
+        .server-info {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 8px 16px;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 13px;
+        }
+        
+        .server-info dt {
+            color: #737373;
+            font-weight: 500;
+        }
+        
+        .server-info dd {
+            color: #1a1a1a;
+        }
+        
+        .delete-btn {
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            font: inherit;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Server Routes</h1>
+            <div class="subtitle">localhost:8080</div>
+        </header>
+        
+        <div class="section">
+            <div class="section-title">Static Pages</div>
+            <div class="route-grid">
+                <a href="/home" class="route-card">
+                    <div class="route-path">/home</div>
+                    <div class="route-desc">Main website entry point serving static content</div>
+                    <div class="route-meta">
+                        <span class="badge badge-method">GET</span>
+                    </div>
+                </a>
+                
+                <a href="/files" class="route-card">
+                    <div class="route-path">/files</div>
+                    <div class="route-desc">Browse directory contents with automatic indexing</div>
+                    <div class="route-meta">
+                        <span class="badge badge-method">GET</span>
+                        <span class="badge badge-autoindex">Autoindex</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">CGI Scripts</div>
+            <div class="route-grid">
+                <a href="/cgi/hello" class="route-card">
+                    <div class="route-path">/cgi/hello</div>
+                    <div class="route-desc">Simple hello world CGI script demonstration</div>
+                    <div class="route-meta">
+                        <span class="badge badge-method">GET</span>
+                        <span class="badge badge-cgi">Python</span>
+                    </div>
+                </a>
+                
+                <a href="/cgi/echo" class="route-card">
+                    <div class="route-path">/cgi/echo</div>
+                    <div class="route-desc">Echo back request data for testing purposes</div>
+                    <div class="route-meta">
+                        <span class="badge badge-method">GET</span>
+                        <span class="badge badge-method">POST</span>
+                        <span class="badge badge-cgi">Python</span>
+                    </div>
+                </a>
+                
+                <a href="/cgi/body" class="route-card">
+                    <div class="route-path">/cgi/body</div>
+                    <div class="route-desc">Process and display POST request body data</div>
+                    <div class="route-meta">
+                        <span class="badge badge-method">GET</span>
+                        <span class="badge badge-method">POST</span>
+                        <span class="badge badge-cgi">Python</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">Interactive Features</div>
+            <div class="route-grid">
+                <a href="/upload/file" class="route-card">
+                    <div class="route-path">/upload/file</div>
+                    <div class="route-desc">Upload files to the server storage</div>
+                    <div class="route-meta">
+                        <span class="badge badge-method">GET</span>
+                        <span class="badge badge-method">POST</span>
+                        <span class="badge badge-upload">Upload</span>
+                    </div>
+                </a>
+                
+                <a href="/session/cookie" class="route-card">
+                    <div class="route-path">/session/cookie</div>
+                    <div class="route-desc">Cookie handling and management demonstration</div>
+                    <div class="route-meta">
+                        <span class="badge badge-method">GET</span>
+                        <span class="badge badge-cgi">Python</span>
+                    </div>
+                </a>
+                
+                <a href="/session/manage" class="route-card">
+                    <div class="route-path">/session/manage</div>
+                    <div class="route-desc">Session management with persistent storage</div>
+                    <div class="route-meta">
+                        <span class="badge badge-method">GET</span>
+                        <span class="badge badge-cgi">Python</span>
+                    </div>
+                </a>
+                
+                <button class="route-card delete-btn" id="deleteBtn">
+                    <div class="route-path">/delete</div>
+                    <div class="route-desc">Delete resources from server temporary storage</div>
+                    <div class="route-meta">
+                        <span class="badge badge-delete">DELETE</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">Redirects</div>
+            <div class="route-grid">
+                <a href="/red" class="route-card">
+                    <div class="route-path">/red</div>
+                    <div class="route-desc">External redirect to YouTube</div>
+                    <div class="route-meta">
+                        <span class="badge badge-redirect">Redirect</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <div class="info-title">Server Configuration</div>
+            <dl class="server-info">
+                <dt>Host:</dt>
+                <dd>127.0.0.1</dd>
+                <dt>Port:</dt>
+                <dd>8080</dd>
+                <dt>Server Name:</dt>
+                <dd>localhost</dd>
+                <dt>CGI Timeout:</dt>
+                <dd>5 seconds</dd>
+            </dl>
+        </div>
+    </div>
+
+    <script>
+        // Handle the DELETE button since it can't be a regular link
+        document.getElementById('deleteBtn').addEventListener('click', () => {
+            if (confirm('This will send a DELETE request to /delete. Continue?')) {
+                fetch('/delete', {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('DELETE request sent successfully');
+                    } else {
+                        alert('DELETE request failed with status: ' + response.status);
+                    }
+                })
+                .catch(error => {
+                    alert('Error sending DELETE request: ' + error.message);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
