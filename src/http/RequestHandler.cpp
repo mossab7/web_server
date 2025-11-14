@@ -308,9 +308,9 @@ std::string RequestHandler::_getDictListing(const std::string& path)
     html += "h1 { color: #1a1a1a; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }\n";
     html += ".subtitle { color: #737373; font-size: 14px; font-family: 'SF Mono', Monaco, 'Courier New', monospace; }\n";
     html += ".section { background: white; border-radius: 4px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }\n";
-    html += ".section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #404040; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e5e5e5; }\n";
+    html += ".section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #404040; margin-bottom: 1px; padding-bottom: 12px; border-bottom: 1px solid #e5e5e5; }\n";
     html += "table { width: 100%; border-collapse: collapse; }\n";
-    html += "thead th { text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #737373; border-bottom: 2px solid #e5e5e5; }\n";
+    html += "thead th { text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #737373; border-bottom: 1px solid #e5e5e5; }\n";
     html += "tbody tr { border-bottom: 1px solid #f5f5f5; transition: background-color 0.2s; }\n";
     html += "tbody tr:hover { background-color: #fafafa; }\n";
     html += "tbody td { padding: 16px; font-size: 14px; color: #1a1a1a; }\n";
