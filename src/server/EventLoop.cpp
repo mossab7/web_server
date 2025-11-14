@@ -66,7 +66,7 @@ void EventLoop::expireTimeouts()
                 logger.error("Unknown exception in onEvent()");
             }
         }
-        logger.info("Finished checking timeout for fd");
+        //logger.info("Finished checking timeout for fd");
     }
 }
 

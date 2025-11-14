@@ -381,14 +381,31 @@ void CGIHandler::start(const RouteMatch &match)
 	Logger logger;
 	logger.debug("CGI script path: " + _scriptPath);
 	logger.debug("CGI interpreter path: " + _interpreterPath);
-	/*
-	//check permissions here
-	if (access(_interpreterPath.c_str(), X_OK) == -1)
+
+	//checking permissions
+	/*--------------------------------------------------------------------------------*/
+	if (!_interpreterPath.empty())
 	{
-		status = 500;
-		throw std::runtime_error("CGI interpreter not executable: " + _interpreterPath);
+		if (access(_interpreterPath.c_str(), X_OK) == -1)
+		{
+			status = 500;
+			throw std::runtime_error("CGI interpreter not executable: " + _interpreterPath);
+		}
+		if (access(_scriptPath.c_str(), R_OK) == -1)
+		{
+			status = 500;
+			throw std::runtime_error("CGI script not readable: " + _scriptPath);
+		}
 	}
-	*/
+	else
+	{
+		if (access(_scriptPath.c_str(), X_OK) == -1)
+		{
+			status = 500;
+			throw std::runtime_error("CGI script not executable: " + _scriptPath);
+		}
+	}
+	/*--------------------------------------------------------------------------------*/
 	_pid = fork();
 	if (_pid < 0)
 	{
