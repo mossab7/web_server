@@ -65,7 +65,7 @@ expiration_str = expiration.strftime('%Y-%m-%d %H:%M:%S')
 # HTTP headers
 sys.stdout.write("Content-Type: text/html\r\n")
 if id_found == False:
-    sys.stdout.write(f"Set-Cookie: sid={session_id}; Path=/session\r\n")
+    sys.stdout.write(f"Set-Cookie: sid={session_id}; Path={os.environ['SCRIPT_NAME']}\r\n")
 sys.stdout.write("\r\n")
 
 # HTML output
