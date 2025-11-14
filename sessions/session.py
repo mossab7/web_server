@@ -31,9 +31,12 @@ for part in cookie.split(';'):
         session_id = part.split('sid=')[1].strip()
         break
 
+id_found = True
+
 # Check if session is valid
 if session_id not in sessions:
     session_id = None
+    id_found = False
 
 # Create new session or update existing
 if session_id:
@@ -61,7 +64,8 @@ expiration_str = expiration.strftime('%Y-%m-%d %H:%M:%S')
 
 # HTTP headers
 sys.stdout.write("Content-Type: text/html\r\n")
-sys.stdout.write(f"Set-Cookie: sid={session_id}; Path=/session\r\n")
+if id_found == False:
+    sys.stdout.write(f"Set-Cookie: sid={session_id}; Path=/session\r\n")
 sys.stdout.write("\r\n")
 
 # HTML output
