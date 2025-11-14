@@ -389,12 +389,16 @@ void CGIHandler::start(const RouteMatch &match)
 		if (access(_interpreterPath.c_str(), X_OK) == -1)
 		{
 			status = 500;
-			throw std::runtime_error("CGI interpreter not executable: " + _interpreterPath);
+			end();
+			return;
+			//throw std::runtime_error("CGI interpreter not executable: " + _interpreterPath);
 		}
 		if (access(_scriptPath.c_str(), R_OK) == -1)
 		{
 			status = 500;
-			throw std::runtime_error("CGI script not readable: " + _scriptPath);
+			end();
+			return;
+			//throw std::runtime_error("CGI script not readable: " + _scriptPath);
 		}
 	}
 	else
@@ -402,7 +406,9 @@ void CGIHandler::start(const RouteMatch &match)
 		if (access(_scriptPath.c_str(), X_OK) == -1)
 		{
 			status = 500;
-			throw std::runtime_error("CGI script not executable: " + _scriptPath);
+			end();
+			return;
+			//throw std::runtime_error("CGI script not executable: " + _scriptPath);
 		}
 	}
 	/*--------------------------------------------------------------------------------*/
