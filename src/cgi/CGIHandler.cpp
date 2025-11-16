@@ -33,7 +33,7 @@ void CGIHandler::onReadable()
 	Logger logger;
 	logger.debug("CGIHandler::onReadable() called");
 	
-	char buffer[BUFFER_SIZE];
+	char buffer[BUFFER_SIZE] = {0};
 	ssize_t bytesRead = _outputPipe.read(buffer, BUFFER_SIZE);
 
 	logger.debug("CGI read " + intToString(bytesRead) + " bytes");
