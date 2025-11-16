@@ -12,7 +12,7 @@ class RingBuffer
     size_t            _tail;     // Next read position
     size_t            _capacity; // Total capacity
     size_t            _size;     // Current amount of data stored
-
+    //std::string _buff;
 public:
     explicit RingBuffer(size_t size);
 

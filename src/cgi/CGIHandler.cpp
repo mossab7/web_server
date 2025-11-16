@@ -9,7 +9,7 @@ void CGIHandler::onEvent(uint32_t events)
 	{
 		logger.debug("CGIHandler: Error event received");
 		onError();
-		return;
+		//return;
 	}
 	if (IS_READ_EVENT(events))
 	{
@@ -37,7 +37,7 @@ void CGIHandler::onReadable()
 	ssize_t bytesRead = _outputPipe.read(buffer, BUFFER_SIZE);
 
 	logger.debug("CGI read " + intToString(bytesRead) + " bytes");
-
+	logger.debug(buffer);
 	if (bytesRead < 0)
 	{
 		logger.error("CGI read error");
@@ -193,9 +193,9 @@ void CGIHandler::onError()
 	// if (_cgiParser.isComplete())
 	// just in case of the whole pipe was consumed in a single go (fk this)
 		
-	//char buffer[BUFFER_SIZE];
-	//ssize_t bytesRead = _outputPipe.read(buffer, BUFFER_SIZE);
-	//// if (bytesRead > 0)
+	// char buffer[BUFFER_SIZE];
+	// ssize_t bytesRead = _outputPipe.read(buffer, BUFFER_SIZE);
+	// // if (bytesRead > 0)
 	// {
 	// 	_cgiParser.addChunk(buffer,bytesRead);
 	//     if (_cgiParser.getState() == ERROR)
@@ -204,24 +204,25 @@ void CGIHandler::onError()
     //     }
 	// 	// _response.feedRAW(buffer,bytesRead);
     // }
-	{
-		_response.feedRAW("", 0);
-		//_response._cgiComplete = true;
-		_isRunning = false;
-	}
+	// {
+	// 	_response.feedRAW("", 0);
+	// 	//_response._cgiComplete = true;
+	// 	_isRunning = false;
+	// }
 	// Clean up pipes
+	onReadable(); // try to read remaining data
 	if (_inputPipe.write_fd() != -1)
 	{
 		logger.debug("CGIHandler::onError() - Closing input pipe" + intToString(_inputPipe.write_fd()));
 		_fd_manager.detachFd(_inputPipe.write_fd());
 		_inputPipe.closeWrite();
 	}
-	if (_outputPipe.read_fd() != -1)
-	{
-		logger.debug("CGIHandler::onError() - Closing output pipe" + intToString(_outputPipe.read_fd()));
-		_fd_manager.detachFd(_outputPipe.read_fd());
-		_outputPipe.closeRead();
-	}
+	// if (_outputPipe.read_fd() != -1)
+	// {
+	// 	logger.debug("CGIHandler::onError() - Closing output pipe" + intToString(_outputPipe.read_fd()));
+	// 	_fd_manager.detachFd(_outputPipe.read_fd());
+	// 	_outputPipe.closeRead();
+	// }
 
 	// Check process status
 	int waitStatus = 0;
@@ -256,7 +257,7 @@ void CGIHandler::onError()
 
 	//status = 502;
 	//_response._cgiComplete = true;
-	_isRunning = false;
+	//_isRunning = false;
 }
 
 void CGIHandler::initArgv(RouteMatch const &match)

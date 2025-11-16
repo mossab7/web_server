@@ -123,7 +123,10 @@ bool Client::_sendData()
         return false;
 
     ssize_t toSend = _handler.readNextChunk(_sendBuff, BUFF_SIZE);
-    
+    logger.debug("--------------------------------------------");
+    logger.debug(_sendBuff);
+    logger.debug("--------------------------------------------");
+
     if (toSend < 0)
     {
         logger.error("Error on Client fd: " + _strFD);
