@@ -339,7 +339,7 @@
             e.preventDefault();
             
             // Use relative path since we're hosting on the same server
-            const endpoint = '/upload';
+            const endpoint = window.location.pathname;
             
             if (selectedFiles.length === 0) {
                 showResponse('error', 'Error', 'No files selected', '');
