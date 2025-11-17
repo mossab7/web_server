@@ -3,23 +3,20 @@
 #include <algorithm>
 
 RingBuffer::RingBuffer(size_t size):
+    _buff(size, 0),
     _head(0),
     _tail(0),
     _capacity(size),
     _size(0)
 {
-    _buff.reserve(size);
 }
 
 size_t  RingBuffer::getCapacity() const { return _capacity; }
 
 size_t  RingBuffer::getSize() const { return _size; }
-#include "Logger.hpp"
+
 void    RingBuffer::clear()
 {
-    //::bzero(_buff.data(), _capacity);
-    //Logger logger;
-    //logger.debug(_buff.data());
     _head = 0;
     _tail = 0;
     _size = 0;
