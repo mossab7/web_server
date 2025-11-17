@@ -242,6 +242,14 @@ void    HTTPResponse::feedRAW(const char* data, size_t size)
     _response.write(data, size);
     
     _response.write(CRLF, 2); 
+
+    Logger logger;
+    char buffer[5000];
+    _response.peek(buffer, sizeof(buffer));
+    logger.debug("/////////////////////////////////////////");
+    logger.debug(buffer);
+    logger.debug("/////////////////////////////////////////");
+
 }
 void    HTTPResponse::feedRAW(const std::string& data)
 {
