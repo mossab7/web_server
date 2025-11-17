@@ -7,29 +7,28 @@ std::string intToString(int value)
     return oss.str();
 }
 
-Client::Client(int socket_fd, ServerConfig &config, FdManager &fdm) :
-    EventHandler(config, fdm, time(NULL) + DEFAULT_CLIENT_TIMEOUT),
-    _socket(socket_fd),
-    _resp("HTTP/1.1"),
-    _handler(config, _req, _resp, fdm),
-    _strFD(intToString(socket_fd)),
-    _state(ST_READING)
+Client::Client(int socket_fd, ServerConfig &config, FdManager &fdm) : EventHandler(config, fdm, time(NULL) + DEFAULT_CLIENT_TIMEOUT),
+                                                                      _socket(socket_fd),
+                                                                      _resp("HTTP/1.1"),
+                                                                      _handler(config, _req, _resp, fdm),
+                                                                      _strFD(intToString(socket_fd)),
+                                                                      _state(ST_READING)
 {
     _socket.set_non_blocking();
 }
-Client::~Client() 
-{ 
+Client::~Client()
+{
     Logger logger;
     logger.info("Client destructor called for fd: " + _strFD);
 }
 
 int Client::get_fd() const { return _socket.get_fd(); }
 
-
 void Client::onEvent(uint32_t events)
 {
     _updateExpiresAt(time(NULL) + DEFAULT_CLIENT_TIMEOUT);
-    if (IS_ERROR_EVENT(events)) {
+    if (IS_ERROR_EVENT(events))
+    {
         onError();
         return;
     }
@@ -41,37 +40,55 @@ void Client::onEvent(uint32_t events)
         onTimeout();
 }
 
-void    Client::onError()
+void Client::onError()
 {
     logger.error("Error event on client fd: " + _strFD);
     _fd_manager.remove(get_fd());
 }
-void    Client::onReadable()
+void Client::onReadable()
 {
     _readData();
     switch (_state)
     {
-    case ST_READING     : break;
-    case ST_PROCESSING  : _processRequest(); break;
-    case ST_PARSEERROR  : _processError(); break;
-    case ST_ERROR       : _processError(); break;
-    case ST_CLOSED      : _closeConnection(); break;
-    default: break;
+    case ST_READING:
+        break;
+    case ST_PROCESSING:
+        _processRequest();
+        break;
+    case ST_PARSEERROR:
+        _processError();
+        break;
+    case ST_ERROR:
+        _processError();
+        break;
+    case ST_CLOSED:
+        _closeConnection();
+        break;
+    default:
+        break;
     }
 }
-void    Client::onWritable()
+void Client::onWritable()
 {
     _sendData();
     switch (_state)
     {
-    case ST_SENDING     : break;
-    case ST_ERROR       : _processError(); break;
-    case ST_SENDCOMPLETE:
-        if (_keepAlive) reset();
-        else _state = ST_CLOSED;
+    case ST_SENDING:
         break;
-    case ST_CLOSED: _closeConnection(); break;
-    default: break;
+    case ST_ERROR:
+        _processError();
+        break;
+    case ST_SENDCOMPLETE:
+        if (_keepAlive)
+            reset();
+        else
+            _state = ST_CLOSED;
+        break;
+    case ST_CLOSED:
+        _closeConnection();
+        break;
+    default:
+        break;
     }
 }
 
@@ -95,7 +112,7 @@ bool Client::_readData()
     }
     _readBuff[size] = '\0';
     _handler.feed(_readBuff, size);
-    
+
     if (_handler.isError())
     {
         logger.debug("Parsing error on client fd: " + _strFD);
@@ -147,31 +164,31 @@ bool Client::_sendData()
         logger.warning("Partial send on client fd: " + _strFD);
         return true;
     }
-    
+
     if (_handler.isResComplete())
     {
         logger.debug("Sending response complete on client fd: " + _strFD);
         _state = ST_SENDCOMPLETE;
         return false;
     }
-    
+
     return true;
 }
 
-void    Client::_closeConnection()
+void Client::_closeConnection()
 {
     logger.error("connection closed of fd: " + _strFD);
     _fd_manager.remove(get_fd());
 }
 
-void    Client::reset()
+void Client::reset()
 {
     _handler.reset();
     _state = ST_READING;
     _fd_manager.modify(this, READ_EVENT);
 }
 
-void    Client::_processError()
+void Client::_processError()
 {
     if (_state == ST_ERROR)
     {
@@ -192,7 +209,7 @@ void Client::_processRequest()
     _fd_manager.modify(this, WRITE_EVENT);
 }
 
-bool    Client::_shouldKeepAlive()
+bool Client::_shouldKeepAlive()
 {
     return _handler.keepAlive();
 }
@@ -212,4 +229,3 @@ void Client::onTimeout()
     logger.error("Timeout on client fd: " + _strFD);
     _fd_manager.remove(get_fd());
 }
-

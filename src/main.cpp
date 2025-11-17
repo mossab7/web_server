@@ -19,9 +19,7 @@
 
 std::string intToString(int value);
 
-
 volatile sig_atomic_t g_shutdown = 0;
-
 
 void signal_handler(int signal)
 {

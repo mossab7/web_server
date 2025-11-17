@@ -11,16 +11,16 @@ void Pipe::open()
 {
     Logger logger;
     logger.info("Creating pipe");
-    if (pipe(fd) == -1) 
+    if (pipe(fd) == -1)
     {
         logger.debug("pipe() syscall failed");
         throw std::runtime_error("Failed to create pipe");
     }
-}   
+}
 
 Pipe::~Pipe()
 {
-   close();
+    close();
 }
 
 int Pipe::read_fd() const
@@ -39,11 +39,10 @@ void Pipe::close()
     closeWrite();
 }
 
-
 int Pipe::read(char *buffer, size_t size)
 {
     ssize_t bytesRead = ::read(fd[0], buffer, size);
-    if (bytesRead < 0)  
+    if (bytesRead < 0)
     {
         throw std::runtime_error("Failed to read from pipe");
     }
@@ -53,7 +52,7 @@ int Pipe::read(char *buffer, size_t size)
 int Pipe::write(const char *data, size_t size)
 {
     ssize_t bytesWritten = ::write(fd[1], data, size);
-    if (bytesWritten < 0) 
+    if (bytesWritten < 0)
     {
         throw std::runtime_error("Failed to write to pipe");
     }
