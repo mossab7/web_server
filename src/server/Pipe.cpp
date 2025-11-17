@@ -5,8 +5,6 @@ Pipe::Pipe()
 {
     fd[0] = -1;
     fd[1] = -1;
-    Logger logger;
-    logger.debug("pipe constructor is called");
 }
 
 void Pipe::open()
@@ -18,7 +16,6 @@ void Pipe::open()
         logger.debug("pipe() syscall failed");
         throw std::runtime_error("Failed to create pipe");
     }
-    logger.debug("pipe created with read fd: " + intToString(fd[0]) + ", write fd: " + intToString(fd[1]));
 }   
 
 Pipe::~Pipe()
@@ -80,15 +77,9 @@ void Pipe::closeWrite()
         fd[1] = -1;
     }
 }
-#include "Logger.hpp"
-std::string intToString(int value);
 void Pipe::set_non_blocking()
 {
     int flags;
-
-    Logger logger;
-    logger.info("Setting pipe fds to non-blocking mode");
-    logger.debug("Read fd: " + intToString(fd[0]) + ", Write fd: " + intToString(fd[1]));
 
     if (fd[0] != -1)
     {

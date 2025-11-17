@@ -38,9 +38,6 @@ std::string intToString(int value);
 
 Socket::~Socket() 
 {
-    // Note: Not calling close() here to avoid issues with copied sockets
-    Logger logger;
-    logger.debug("Socket destructor called for fd: " + intToString(_fd));
     if (_fd != -1) {
         ::close(_fd);
     }
@@ -155,9 +152,6 @@ void Socket::close()
 {
     if (_fd != -1) 
     {
-        // Note: Epoll cleanup should be handled externally
-        // if (_epoll)
-        //     _epoll->remove_fd(*this);
         ::close(_fd);
         _fd = -1;
     }

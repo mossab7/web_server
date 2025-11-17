@@ -3,7 +3,6 @@
 #include "../../include/utils/Logger.hpp"
 #include <sstream>
 
-// Helper macro for converting to string
 #define SSTR(x) static_cast<std::ostringstream &>((std::ostringstream() << x)).str()
 
 Server::Server(ServerConfig &config, FdManager &fdm) 
@@ -11,13 +10,11 @@ Server::Server(ServerConfig &config, FdManager &fdm)
 {
     Logger logger;
     
-    // Set _socket options for reuse
     int opt = 1;
     if (setsockopt(_socket.get_fd(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         throw std::runtime_error("Failed to set SO_REUSEADDR");
     }
     
-    // Bind to address
     struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = inet_addr(config.host.c_str());
@@ -58,26 +55,21 @@ void Server::onReadable()
     Logger logger;
     
     try {
-        // Accept new connection
         int client_socket = _socket.accept();
         
         logger.info("New client connection accepted on fd: " + SSTR(client_socket));
 
-        // Create new Client handler
         Client* client = new Client(client_socket, _config, _fd_manager);
         
-        // Register client with epoll for reading (Level-Triggered)
         _fd_manager.add(client->get_fd(), client, READ_EVENT);
         
     } catch (const std::exception& e) {
         logger.error("Failed to accept client connection: " + std::string(e.what()));
-        // Don't throw - server should continue accepting other connections
     }
 }
 
 void Server::onWritable()
 {
-    // Server socket should never be in writable state
     Logger logger;
     logger.warning("Unexpected writable event on server socket");
 }
@@ -103,7 +95,6 @@ void Server::destroy()
 
 void Server::onTimeout()
 {
-    // Server socket should not have timeouts
     Logger logger;
     logger.warning("Unexpected timeout event on server socket");
 }
