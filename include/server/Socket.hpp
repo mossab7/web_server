@@ -1,7 +1,7 @@
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
-#include <unistd.h> 
+#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdexcept>
@@ -10,9 +10,11 @@
 #include <string>
 #include <fcntl.h>
 
-class Epoll; 
+class Epoll;
 
-struct fromFdTag {};
+struct fromFdTag
+{
+};
 
 class Socket
 {
@@ -22,7 +24,7 @@ private:
     Epoll *_epoll;
     Socket &operator=(const Socket &other);
     void create_socket(int domain, int type, int protocol);
-    
+
 public:
     Socket();
     Socket(const Socket &other);
@@ -45,7 +47,6 @@ public:
     void close();
 };
 
-// Operator overloads
 uint32_t operator|(uint32_t event, const Socket &socket);
 uint32_t operator&(uint32_t event, const Socket &socket);
 uint32_t operator|(const Socket &socket, uint32_t event);
@@ -56,4 +57,4 @@ bool operator==(const Socket &lhs, const Socket &rhs);
 #define EVENT_HAS_READ(event) ((event) & EPOLLIN)
 #define EVENT_HAS_WRITE(event) ((event) & EPOLLOUT)
 
-#endif //SOCKET_HPP
+#endif // SOCKET_HPP

@@ -19,17 +19,8 @@
 
 std::string intToString(int value);
 
-// External shutdown flag (defined in main.cpp)
-
-// Forward declaration of the event_loop function
-
-// Global flag for graceful shutdown
 volatile sig_atomic_t g_shutdown = 0;
 
-/**
- * @brief Signal handler for graceful shutdown
- * @param signal The signal number
- */
 void signal_handler(int signal)
 {
     if (signal == SIGINT || signal == SIGTERM)
@@ -39,9 +30,6 @@ void signal_handler(int signal)
     }
 }
 
-/**
- * @brief Setup signal handlers for graceful shutdown
- */
 void setup_signal_handlers()
 {
     struct sigaction sa;
@@ -59,16 +47,9 @@ void setup_signal_handlers()
         throw std::runtime_error("Failed to setup SIGTERM handler");
     }
 
-    // Ignore SIGPIPE to handle broken pipe errors gracefully
     signal(SIGPIPE, SIG_IGN);
 }
 
-/**
- * @brief Main function to test the event loop
- * @param argc Number of command line arguments (unused)
- * @param argv Command line arguments (unused)
- * @return Exit status
- */
 int main(int ac, char **av)
 {
     if (ac != 2)
@@ -81,12 +62,10 @@ int main(int ac, char **av)
     {
         WebConfigFile config(av[1]);
 
-        // // Initialize logger
         Logger logger;
         EventLoop eventLoop;
         std::vector<ServerConfig> servers = config.getServers();
 
-        // Store server pointers for proper lifetime management
         std::vector<Server *> serverInstances;
 
         for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); ++it)
@@ -98,28 +77,15 @@ int main(int ac, char **av)
         }
         logger.info("Starting webserver...");
 
-        // Setup signal handlers for graceful shutdown
         setup_signal_handlers();
         logger.info("Signal handlers configured");
 
-        // Print startup message
         std::cout << "=== Webserver Starting ===" << std::endl;
         std::cout << "Press Ctrl+C to stop the server gracefully" << std::endl;
         std::cout << "Listening for connections..." << std::endl;
 
-        // Start the event loop
         logger.info("Starting event loop");
         eventLoop.run();
-
-        // Cleanup servers after event loop exits
-        // logger.info("Cleaning up servers...");
-        // for (std::vector<Server *>::iterator it = serverInstances.begin(); it != serverInstances.end(); ++it)
-        // {
-        //     eventLoop.fd_manager.remove((*it)->get_fd());
-        //     delete *it;
-        // }
-
-        // This point should not be reached unless event_loop exits
         logger.info("Event loop exited");
     }
     catch (const std::exception &e)

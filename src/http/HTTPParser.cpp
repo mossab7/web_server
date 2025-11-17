@@ -263,13 +263,15 @@ void    HTTPParser::_parseBody()
 {
     if (_buffer.empty() || _buffOffset >= _buffer.size())
         return;
+    
+    size_t available = _buffer.size() - _buffOffset;
     if (_isCGIResponse)
     {
-        _body.write(_buffer.data() + _buffOffset, _buffer.size() - _buffOffset);
+        _body.write(_buffer.data() + _buffOffset, available);
+        _buffOffset += available;
         return;
     }
 
-    size_t available = _buffer.size() - _buffOffset;
     size_t needed = _contentLength - _bytesRead;
     size_t to_read = std::min(available, needed);
     

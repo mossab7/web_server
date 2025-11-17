@@ -7,31 +7,28 @@ std::string intToString(int value)
     return oss.str();
 }
 
-Client::Client(int socket_fd, ServerConfig &config, FdManager &fdm) :
-    EventHandler(config, fdm, time(NULL) + DEFAULT_CLIENT_TIMEOUT),
-    _socket(socket_fd),
-    _resp("HTTP/1.1"),
-    _handler(config, _req, _resp, fdm),
-    _strFD(intToString(socket_fd)),
-    _state(ST_READING)
+Client::Client(int socket_fd, ServerConfig &config, FdManager &fdm) : EventHandler(config, fdm, time(NULL) + DEFAULT_CLIENT_TIMEOUT),
+                                                                      _socket(socket_fd),
+                                                                      _resp("HTTP/1.1"),
+                                                                      _handler(config, _req, _resp, fdm),
+                                                                      _strFD(intToString(socket_fd)),
+                                                                      _state(ST_READING)
 {
     _socket.set_non_blocking();
 }
-Client::~Client() 
-{ 
+Client::~Client()
+{
     Logger logger;
     logger.info("Client destructor called for fd: " + _strFD);
 }
 
 int Client::get_fd() const { return _socket.get_fd(); }
 
-
-/*--------------------------------------------------------*/
 void Client::onEvent(uint32_t events)
 {
-    //logger.debug("Event on client fd: " + _strFD + " events: " + intToString(events));
     _updateExpiresAt(time(NULL) + DEFAULT_CLIENT_TIMEOUT);
-    if (IS_ERROR_EVENT(events)) {
+    if (IS_ERROR_EVENT(events))
+    {
         onError();
         return;
     }
@@ -43,44 +40,60 @@ void Client::onEvent(uint32_t events)
         onTimeout();
 }
 
-void    Client::onError()
+void Client::onError()
 {
     logger.error("Error event on client fd: " + _strFD);
     _fd_manager.remove(get_fd());
 }
-void    Client::onReadable()
+void Client::onReadable()
 {
     _readData();
     switch (_state)
     {
-    case ST_READING     : break;
-    case ST_PROCESSING  : _processRequest(); break;
-    case ST_PARSEERROR  : _processError(); break;
-    case ST_ERROR       : _processError(); break;
-    case ST_CLOSED      : _closeConnection(); break;
-    default: break;
+    case ST_READING:
+        break;
+    case ST_PROCESSING:
+        _processRequest();
+        break;
+    case ST_PARSEERROR:
+        _processError();
+        break;
+    case ST_ERROR:
+        _processError();
+        break;
+    case ST_CLOSED:
+        _closeConnection();
+        break;
+    default:
+        break;
     }
 }
-void    Client::onWritable()
+void Client::onWritable()
 {
     _sendData();
     switch (_state)
     {
-    case ST_SENDING     : break;
-    case ST_ERROR       : _processError(); break;
-    case ST_SENDCOMPLETE:
-        if (_keepAlive) reset();
-        else _state = ST_CLOSED;
+    case ST_SENDING:
         break;
-    case ST_CLOSED: _closeConnection(); break;
-    default: break;
+    case ST_ERROR:
+        _processError();
+        break;
+    case ST_SENDCOMPLETE:
+        if (_keepAlive)
+            reset();
+        else
+            _state = ST_CLOSED;
+        break;
+    case ST_CLOSED:
+        _closeConnection();
+        break;
+    default:
+        break;
     }
 }
-/*--------------------------------------------------------*/
 
 bool Client::_readData()
 {
-    // we can process the request even if it is not complete
     if (_state != ST_READING && _state != ST_PROCESSING)
         return false;
 
@@ -99,7 +112,7 @@ bool Client::_readData()
     }
     _readBuff[size] = '\0';
     _handler.feed(_readBuff, size);
-    
+
     if (_handler.isError())
     {
         logger.debug("Parsing error on client fd: " + _strFD);
@@ -108,8 +121,6 @@ bool Client::_readData()
     }
     if (_handler.isReqHeaderComplete())
     {
-        // after parsing the header,
-        // we decide what to do with the body if any
         logger.info("request processing started: " + _strFD);
         _state = ST_PROCESSING;
         return false;
@@ -123,7 +134,7 @@ bool Client::_sendData()
         return false;
 
     ssize_t toSend = _handler.readNextChunk(_sendBuff, BUFF_SIZE);
-    
+
     if (toSend < 0)
     {
         logger.error("Error on Client fd: " + _strFD);
@@ -132,20 +143,16 @@ bool Client::_sendData()
     }
     if (toSend == 0)
     {
-        // Only consider response complete if handler confirms it
         if (_handler.isResComplete())
         {
             logger.debug("Client send response complete fd: " + _strFD);
             _state = ST_SENDCOMPLETE;
             return false;
         }
-        // No data available yet, but response not complete (e.g., waiting for CGI)
         return true;
     }
     _handler.responseStarted = true;
     ssize_t sent = _socket.send(_sendBuff, toSend, 0);
-    //logger.debug("Sending " + intToString(toSend) + " bytes to client fd: " + _strFD);
-    //logger.debug(_sendBuff);
     if (sent < 0)
     {
         logger.error("Can't send data on client fd: " + _strFD);
@@ -157,31 +164,31 @@ bool Client::_sendData()
         logger.warning("Partial send on client fd: " + _strFD);
         return true;
     }
-    
+
     if (_handler.isResComplete())
     {
         logger.debug("Sending response complete on client fd: " + _strFD);
         _state = ST_SENDCOMPLETE;
         return false;
     }
-    
+
     return true;
 }
 
-void    Client::_closeConnection()
+void Client::_closeConnection()
 {
     logger.error("connection closed of fd: " + _strFD);
     _fd_manager.remove(get_fd());
 }
 
-void    Client::reset()
+void Client::reset()
 {
     _handler.reset();
     _state = ST_READING;
     _fd_manager.modify(this, READ_EVENT);
 }
 
-void    Client::_processError()
+void Client::_processError()
 {
     if (_state == ST_ERROR)
     {
@@ -202,7 +209,7 @@ void Client::_processRequest()
     _fd_manager.modify(this, WRITE_EVENT);
 }
 
-bool    Client::_shouldKeepAlive()
+bool Client::_shouldKeepAlive()
 {
     return _handler.keepAlive();
 }
@@ -214,7 +221,6 @@ int Client::get_fd()
 
 void Client::destroy()
 {
-    logger.debug("Client::destroy() called for fd: " + _strFD);
     delete this;
 }
 
@@ -223,4 +229,3 @@ void Client::onTimeout()
     logger.error("Timeout on client fd: " + _strFD);
     _fd_manager.remove(get_fd());
 }
-

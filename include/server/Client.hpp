@@ -15,53 +15,51 @@
 
 enum ClientState
 {
-    ST_READING      ,  // reading the request and parsing it
-    ST_PROCESSING   ,  // processing the request and build a response
-    ST_PARSEERROR   ,  // bad request
-    ST_SENDING      ,
-    ST_SENDCOMPLETE ,
-    ST_CLOSED       ,
+    ST_READING,
+    ST_PROCESSING,
+    ST_PARSEERROR,
+    ST_SENDING,
+    ST_SENDCOMPLETE,
+    ST_CLOSED,
     ST_ERROR
 };
 
-class Client: public EventHandler
+class Client : public EventHandler
 {
     Socket _socket;
     Logger logger;
 
-    HTTPParser      _req;
-    HTTPResponse    _resp;
+    HTTPParser _req;
+    HTTPResponse _resp;
 
-    RequestHandler  _handler;
+    RequestHandler _handler;
 
+    char _readBuff[BUFF_SIZE];
+    char _sendBuff[BUFF_SIZE];
 
-    char         _readBuff[BUFF_SIZE];
-    char         _sendBuff[BUFF_SIZE];
+    std::string _strFD;
+    ClientState _state;
 
-    std::string  _strFD;
-    ClientState  _state;
+    bool _keepAlive;
 
-    bool         _keepAlive;
+    bool _shouldKeepAlive();
 
-    bool    _shouldKeepAlive();
+    void _closeConnection();
 
-    void    _closeConnection();
+    void _processError();
+    void _processRequest();
 
-    void    _processError();
-    void    _processRequest();
-
-    bool    _readData(); // returns true if more data is expected
-    bool    _sendData(); // returns true if more data needs to be sent
+    bool _readData();
+    bool _sendData();
 
 public:
     Client(int socket_fd, ServerConfig &config, FdManager &fdm);
     ~Client();
 
-    void    reset();
+    void reset();
 
-    void    setCGIMode(bool b); // todo: ignores the '_handler' and send the raw _sendbuff
+    void setCGIMode(bool b);
 
-    // EventHandler interface
     int get_fd() const;
     void destroy();
     void onEvent(uint32_t events);
@@ -72,4 +70,4 @@ public:
     int get_fd();
 };
 
-#endif //CLIENT_HPP
+#endif // CLIENT_HPP

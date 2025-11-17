@@ -27,7 +27,7 @@ private:
     int _epoll_fd;
     Epoll(const Epoll &other);
     Epoll &operator=(const Epoll &other);
-    
+
 public:
     Epoll();
     ~Epoll();
@@ -41,5 +41,4 @@ public:
     int getFd();
 };
 
-
-#endif //EPOLL_HPP
+#endif // EPOLL_HPP
