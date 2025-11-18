@@ -69,7 +69,7 @@ ssize_t HTTPResponse::readNextChunk(char* buff, size_t size)
         return toSend;
 
     // If the entire file has been sent, we're done
-    if (_file_fd != -1 && _bytes_sent >= _file_size)
+    if (_bytes_sent >= _file_size)
     {
         closeFile();
         return 0;
