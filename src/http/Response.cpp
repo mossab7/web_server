@@ -6,7 +6,6 @@ HTTPResponse::HTTPResponse(const std::string& version):
     _file_fd(-1),
     _file_size(0),
     _bytes_sent(0)
-    //_cgiComplete(false)
 {}
 
 HTTPResponse::~HTTPResponse()
@@ -70,7 +69,7 @@ ssize_t HTTPResponse::readNextChunk(char* buff, size_t size)
         return toSend;
 
     // If the entire file has been sent, we're done
-    if (_bytes_sent >= _file_size)
+    if (_file_fd != -1 && _bytes_sent >= _file_size)
     {
         closeFile();
         return 0;
@@ -83,7 +82,7 @@ ssize_t HTTPResponse::readNextChunk(char* buff, size_t size)
 
     return bytes; // could be number of bytes read or -1 on error
 }
-#include "Logger.hpp"
+
 bool    HTTPResponse::isComplete() const
 {
     Logger logger;
@@ -147,6 +146,7 @@ const std::string HTTPResponse::_getContentType(const std::string &filepath)
     // Other
     if (ext == ".pdf") return "application/pdf";
     if (ext == ".zip") return "application/zip";
+    if (ext == ".mp4") return "video/mp4";
     
     return "application/octet-stream";
 }
@@ -238,18 +238,8 @@ void    HTTPResponse::feedRAW(const char* data, size_t size)
 
     _response.write(sizeStr.data(), sizeStr.size());
     _response.write(CRLF, 2);
-
     _response.write(data, size);
-    
     _response.write(CRLF, 2); 
-
-    Logger logger;
-    char buffer[5000];
-    _response.peek(buffer, sizeof(buffer));
-    logger.debug("/////////////////////////////////////////");
-    logger.debug(buffer);
-    logger.debug("/////////////////////////////////////////");
-
 }
 void    HTTPResponse::feedRAW(const std::string& data)
 {
