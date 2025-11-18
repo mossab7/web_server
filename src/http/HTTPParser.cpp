@@ -97,7 +97,6 @@ void    HTTPParser::_parse()
 {
 label:
     parse_state old_state = _state;
-    size_t old_offset = _buffOffset;
 
     switch (_state)
     {
@@ -115,8 +114,11 @@ label:
     default: break;
     }
 
-    if (_state >= BODY)
-        _bodySize += _buffOffset - old_offset;
+    if (_state == BODY)
+        _bodySize = _contentLength;
+    else if (_state == CHUNK_DATA)
+        _bodySize += _chunkSize;
+
     if (_buffOffset * 2 >= BUFF_SIZE)
     {
         _buffer.erase(0, _buffOffset);
