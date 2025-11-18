@@ -61,7 +61,7 @@ public:
 	~CGIHandler();
 	int get_fd();
 	int getStatus();
-	void start(const RouteMatch &match);
+	void start(const RouteMatch &match, bool body_availelbe);
 	void destroy();
 	void onEvent(uint32_t events);
 	void onReadable();

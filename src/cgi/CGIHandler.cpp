@@ -279,13 +279,13 @@ CGIHandler::~CGIHandler()
 	end();
 }
 
-void CGIHandler::start(const RouteMatch &match)
+void CGIHandler::start(const RouteMatch &match, bool body_availelbe)
 {
 	if (_isRunning)
 		return;
 
 
-	_needBody = (_Reqparser.getMethod() == "POST" || _Reqparser.getMethod() == "PUT");
+	_needBody = body_availelbe;
 	_scriptPath = match.scriptPath;
 	_match = match;
 	try

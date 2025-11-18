@@ -421,7 +421,7 @@ void    RequestHandler::_handleCGI(const RouteMatch& match)
     // run the script, see RouteMatch for more info.. etc
     logger.debug("cgi start is called");
     _cgiSrtartTime = time(NULL);
-    _cgi.start(match);
+    _cgi.start(match, _request.hasBody());
 }
 
 void    RequestHandler::setError(int code) { _sendErrorResponse(code); }

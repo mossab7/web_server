@@ -32,6 +32,7 @@ std::string&    HTTPParser::getHeader(const std::string& key) { return _headers[
 
 RingBuffer&     HTTPParser::getBody(void) { return _body; }
 size_t          HTTPParser::getBodySize(void) { return _bodySize; }
+bool            HTTPParser::hasBody(void) { return _contentLength || _isChunked; }
 
 parse_state     HTTPParser::getState(void) { return _state; }
 bool    HTTPParser::isComplete(void)
@@ -214,9 +215,10 @@ void    HTTPParser::_parseHeaders()
             else if (it != _headers.end()) // prioritize chunked over con-lenth
             {
                 char*   ptr = NULL;
-                _contentLength = std::strtol(it->second.data(), &ptr, 10);
-                _state = (*ptr ? ERROR : BODY);
+                ssize_t len = std::strtol(it->second.data(), &ptr, 10);
+                _state = (*ptr != '\0' || len < 0 ? ERROR : BODY);
                 if (_state == ERROR) return;
+                _contentLength = len;
                 _state = (_contentLength == 0) ? COMPLETE : BODY;
             }
             else
@@ -233,6 +235,11 @@ void    HTTPParser::_parseHeaders()
         }
 
         std::string key = _buffer.substr(_buffOffset, colon_pos - _buffOffset);
+        if (key.find_first_of(" \t") != NPOS)
+        {
+            _state = ERROR;
+            return;
+        }
         std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 
         std::string value = _buffer.substr(colon_pos + 1, idx - colon_pos - 1);

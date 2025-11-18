@@ -129,6 +129,7 @@ public:
     bool            isError();
 
     RingBuffer& getBody(void);
+    bool        hasBody(void);
     size_t      getBodySize(void);
 
     void    reset();  // To reuse object for keep-alive connections
