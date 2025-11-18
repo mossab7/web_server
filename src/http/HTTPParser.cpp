@@ -235,6 +235,11 @@ void    HTTPParser::_parseHeaders()
         }
 
         std::string key = _buffer.substr(_buffOffset, colon_pos - _buffOffset);
+        if (key.find_first_of(" \t") != NPOS)
+        {
+            _state = ERROR;
+            return;
+        }
         std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 
         std::string value = _buffer.substr(colon_pos + 1, idx - colon_pos - 1);
