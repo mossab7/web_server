@@ -215,9 +215,10 @@ void    HTTPParser::_parseHeaders()
             else if (it != _headers.end()) // prioritize chunked over con-lenth
             {
                 char*   ptr = NULL;
-                _contentLength = std::strtol(it->second.data(), &ptr, 10);
-                _state = (*ptr ? ERROR : BODY);
+                ssize_t len = std::strtol(it->second.data(), &ptr, 10);
+                _state = (*ptr != '\0' || len < 0 ? ERROR : BODY);
                 if (_state == ERROR) return;
+                _contentLength = len;
                 _state = (_contentLength == 0) ? COMPLETE : BODY;
             }
             else
