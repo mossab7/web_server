@@ -111,7 +111,7 @@ label:
     case BODY       : _parseBody(); break;
     case CHUNK_SIZE : _parseChunkedSize(); break;
     case CHUNK_DATA : _parseChunkedSegment(); break;
-    default: break;
+    default: return;
     }
 
     if (_state == BODY)
