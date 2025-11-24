@@ -1,19 +1,5 @@
 #include "ConfigParser.hpp"
 
-/**
- * @brief Default constructor for the Server struct.
- *
- * Initializes a server instance with default values:
- * - Host: "127.0.0.1" (localhost)
- * - Port: 8080
- * - Name: "localhost:8080"
- * - Root directory: "/"
- * - Default index file: "index.html"
- * - Maximum request body size: 10 MB
- * - Standard HTTP error pages (400, 403, 404, 500) are loaded using getErrorPage().
- *
- * Also calls initErrorPages() to ensure the error pages system is ready.
- */
 ServerConfig::ServerConfig()
 {
     initErrorPages();
@@ -30,22 +16,8 @@ ServerConfig::ServerConfig()
     errors[500] = getErrorPage(500);
 }
 
-/**
- * @brief Constructor for the Location struct, initializing from a Server instance.
- *
- * Sets default values for a location block:
- * - route: empty string
- * - root: inherited from the given Server
- * - cgi, redirect, upload: empty strings
- * - scriptInterpreter: empty (no interpreter defined by default)
- * - cgi_timeout: default to 1000 milliseconds (1 second), specifies the timeout for CGI script execution.
- * - autoindex: false
- * - methods: default to "GET"
- * - maxBody: inherited from the Server's maxBody
- * - files: inherit server's default index files
- *
- * @param server The Server instance from which to inherit default values.
- */
+
+
 Location::Location(ServerConfig server)
 {
     route = "";
@@ -62,29 +34,15 @@ Location::Location(ServerConfig server)
     indexFiles = server.indexFiles;
 }
 
-/**
- * @brief Returns a reference to the vector of servers in the configuration.
- *
- * This allows direct access to the list of Server objects stored in the
- * WebConfigFile, enabling iteration, modification, or queries.
- *
- * @return Reference to the internal vector of Server objects.
- */
+
+
 vector<ServerConfig> &WebConfigFile::getServers()
 {
     return (_servers);
 }
 
-/**
- * @brief Retrieves a server from the configuration by its name.
- *
- * This function searches through the internal list of servers (_servers)
- * and returns a copy of the Server object whose 'name' matches the provided
- * string. If no matching server is found, a default Server object is returned.
- *
- * @param name The name of the server to search for.
- * @return A copy of the matching Server object, or a default Server if none found.
- */
+
+
 ServerConfig WebConfigFile::getServer(const string &name)
 {
     for (size_t i = 0; i < _servers.size(); i++)
@@ -96,28 +54,15 @@ ServerConfig WebConfigFile::getServer(const string &name)
     return (ServerConfig());
 }
 
-/**
- * @brief Adds a new server to the configuration.
- *
- * This function appends the given Server object to the internal list
- * of servers (_servers) maintained by the WebConfigFile.
- *
- * @param server The Server object to add to the configuration.
- */
+
+
 void WebConfigFile::addServer(const ServerConfig &server)
 {
     _servers.push_back(server);
 }
 
-/**
- * @brief Removes leading and trailing whitespace characters from a string.
- *
- * This function trims spaces, tabs, newlines, and carriage returns
- * from both the beginning and the end of the input string.
- *
- * @param str The input string to trim.
- * @return A new string with no leading or trailing whitespace.
- */
+
+
 string trim(const string &str)
 {
     size_t start = str.find_first_not_of(" \t\n\r");
@@ -127,16 +72,8 @@ string trim(const string &str)
     return (str.substr(start, end - start + 1));
 }
 
-/**
- * @brief Reduces multiple consecutive spaces or tabs to a single space.
- *
- * This function iterates through the input string and collapses sequences
- * of spaces and tabs into a single space, while preserving spaces inside
- * quotes (single or double).
- *
- * @param str The input string to process.
- * @return A new string with reduced whitespace between words.
- */
+
+
 string reduceSpaces(const string &str)
 {
     string result;
@@ -167,17 +104,8 @@ string reduceSpaces(const string &str)
     return (result);
 }
 
-/**
- * @brief Removes comments from a configuration line.
- *
- * This function looks for the '#' character and treats everything after it
- * as a comment. It trims leading/trailing whitespace and reduces multiple
- * spaces/tabs between words. If no comment is found, it just trims and
- * reduces spaces in the entire line.
- *
- * @param str The input string from the configuration file.
- * @return A cleaned string with comments removed and extra spaces reduced.
- */
+
+
 string removeComment(const string &str)
 {
     size_t pos = str.find('#');
@@ -186,16 +114,8 @@ string removeComment(const string &str)
     return (reduceSpaces(trim(str)));
 }
 
-/**
- * @brief Splits a string into tokens based on spaces, respecting quotes.
- *
- * This function parses the input string and splits it into separate words
- * (tokens) using spaces as delimiters. Text enclosed in single ('') or
- * double ("") quotes is treated as a single token, even if it contains spaces.
- *
- * @param str The input string to split.
- * @return A vector of string tokens extracted from the input.
- */
+
+
 vector<string> split(const string &str)
 {
     vector<string> tokens;
@@ -228,13 +148,8 @@ vector<string> split(const string &str)
     return (tokens);
 }
 
-/**
- * @brief Throws a runtime_error with a formatted syntax error message.
- *
- * @param str The line content that caused the error.
- * @param fname The name of the configuration file.
- * @param lnNbr The line number where the error occurred.
- */
+
+
 void throwSyntaxError(string &str, const string &fname, size_t &lnNbr)
 {
     ostringstream oss;
@@ -242,18 +157,8 @@ void throwSyntaxError(string &str, const string &fname, size_t &lnNbr)
     throw(runtime_error(oss.str()));
 }
 
-/**
- * @brief Converts a numeric string to a size_t value.
- *
- * Checks that the string contains only digits and converts it to size_t using atol.
- * Throws a syntax error if the string is invalid.
- *
- * @param str Numeric string to convert.
- * @param line Full line from the config file (for error reporting).
- * @param fname Config file name.
- * @param lnNbr Line number in the config file.
- * @return Converted numeric value.
- */
+
+
 size_t myAtol(string str, string &line, const string &fname, size_t &lnNbr)
 {
     for (size_t i = 0; i < str.size(); i++)
@@ -264,25 +169,8 @@ size_t myAtol(string str, string &line, const string &fname, size_t &lnNbr)
     return (atol(str.c_str()));
 }
 
-/**
- * @brief Parses and applies a single directive in a location block.
- *
- * Updates the given Location object (locTmp) based on the directive tokens.
- * Handles: route, root, autoindex, client_max_body_size, redirect, upload_store,
- * cgi_pass, cgi_timeout, index, and methods.
- *
- * Validation:
- * - Ensures numeric values for client_max_body_size and cgi_timeout.
- * - Ensures methods are GET, POST, or DELETE.
- * - Prevents duplicates in indexFiles and methods vectors.
- *
- * @param str Full line from the configuration file (for error reporting).
- * @param tokens Tokenized words of the line.
- * @param locTmp Location object to update.
- * @param fname Configuration file name.
- * @param lnNbr Line number in the configuration file.
- * @return 0 on success; throws runtime_error on syntax errors.
- */
+
+
 short handleLocation(string str, vector<string> &tokens, Location &locTmp, const string &fname, size_t &lnNbr)
 {
     if (tokens.size() < 2)
@@ -362,27 +250,8 @@ short handleLocation(string str, vector<string> &tokens, Location &locTmp, const
     return (0);
 }
 
-/**
- * @brief Parses and applies a single directive within a server block.
- *
- * This function processes the tokens of a configuration line and updates
- * the corresponding fields of the given Server object (srvTmp). It handles
- * directives such as host, port, server_name, root, client_max_body_size,
- * index, and error_page.
- *
- * Validation:
- * - Ensures a valid IPv4 address for host.
- * - Ensures port numbers are within the range 0–65535.
- * - Ensures client_max_body_size is numeric.
- * - Prevents duplicate entries in the index files vector.
- *
- * @param str The full line from the configuration file (used for error reporting).
- * @param tokens Tokenized words of the line.
- * @param srvTmp The Server object to be updated.
- * @param fname The name of the configuration file.
- * @param lnNbr The line number in the configuration file.
- * @return 0 on success; throws runtime_error on syntax errors.
- */
+
+
 short handleServer(string str, vector<string> &tokens, ServerConfig &srvTmp, const string &fname, size_t &lnNbr)
 {
     if (tokens.size() < 2)
@@ -438,27 +307,8 @@ short handleServer(string str, vector<string> &tokens, ServerConfig &srvTmp, con
     return (0);
 }
 
-/**
- * @brief Processes a configuration line and determines its context.
- *
- * This function identifies whether the current line belongs to a server
- * block, a location block, or is a closing brace. It maintains static
- * state to track whether the parser is currently inside a server or
- * location block.
- *
- * Behavior:
- * - Starts a new Server or Location object when encountering "server{" or "location{".
- * - Closes the current Location or Server when encountering "}".
- * - Delegates processing of directives to handleServer or handleLocation.
- * - Returns a syntax error if a directive appears outside of a block or if
- *   block syntax rules are violated.
- *
- * @param str The configuration line to process.
- * @param fName The name of the configuration file (for error reporting).
- * @param lnNbr The current line number (for error reporting).
- * @param config Reference to the WebConfigFile object being populated.
- * @return 0 on success; throws runtime_error on syntax errors.
- */
+
+
 short handleDirective(string &str, const string &fName, size_t &lnNbr, WebConfigFile &config)
 {
     static bool srvActive = false;
@@ -525,21 +375,8 @@ short handleDirective(string &str, const string &fName, size_t &lnNbr, WebConfig
     return (0);
 }
 
-/**
- * @brief Constructs a WebConfigFile object by parsing a configuration file.
- *
- * This constructor opens and reads the specified configuration file line by line.
- * It removes comments, trims unnecessary spaces, and delegates the interpretation
- * of each valid line to @ref handleDirective. Based on the parsed data, it fills
- * the internal list of ServerConfig objects.
- *
- * Behavior:
- * - Throws a runtime_error if the file cannot be opened.
- * - Throws a runtime_error if the configuration file is empty.
- * - Throws a runtime_error if any line fails to parse.
- *
- * @param fName The path to the configuration file.
- */
+
+
 WebConfigFile::WebConfigFile(const string &fName)
 {
     _inputFile.open(fName.c_str());
@@ -563,11 +400,15 @@ WebConfigFile::WebConfigFile(const string &fName)
         throw runtime_error("Error: Configuration file is empty " + fName);
 }
 
-/**
- * @brief Destructor that closes the configuration file if it is still open.
- */
+
+
 WebConfigFile::~WebConfigFile()
 {
     if (_inputFile.is_open())
         _inputFile.close();
 }
+
+
+
+
+

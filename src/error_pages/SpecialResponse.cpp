@@ -267,15 +267,8 @@ void initErrorPages()
     ;
 }
 
-/**
- * @brief Get the HTML page for a given HTTP error code.
- *
- * If the code exists in defaultErrorPages, return the corresponding HTML.
- * Otherwise, return a default "Unknown Error" HTML page.
- *
- * @param code HTTP status code
- * @return const string& Reference to the HTML content
- */
+
+
 const std::string getErrorPage(int code)
 {
     const std::map<int, std::string>::iterator& it = defaultErrorPages.find(code);
